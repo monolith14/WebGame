@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 //импорт на джърси библиотеките
@@ -92,27 +93,26 @@ public class DBC {
 		String token = "";
 		Integer xx = 1;
 		for (int i = 0; i < 20; i++) {
-			xx = r.nextInt(3)+1;
-			if(xx.equals(1)){
+			xx = r.nextInt(3) + 1;
+			if (xx.equals(1)) {
 				token += (char) (48 + r.nextInt(10));
-			}
-			else if(xx.equals(2)){
+			} else if (xx.equals(2)) {
 				token += (char) (65 + r.nextInt(26));
-			}
-			else if(xx.equals(3)){
+			} else if (xx.equals(3)) {
 				token += (char) (97 + r.nextInt(26));
 			}
 
 		}
 
-		return token;//return User data??????????????????????????
+		return token;// return User data??????????????????????????
 	}
 
 	/*
 	 * регистрация на нов потребител достъпва се на адрес
 	 * http://localhost:8080/webgame/db/register?username=myusername&p1=password
 	 * &p2=password&name=myname проверка на паролите дали съвпадат/валидацията
-	 * по-добре да се прави с jquery/ ???? да се криптира паролата с md5???? заявка -
+	 * по-добре да се прави с jquery/ ???? да се криптира паролата с md5????
+	 * заявка -
 	 * http://localhost:8080/WebGame/db/register?username=myname2&p1=2&p2=2&name
 	 * =myusername&mail=mymail
 	 */
@@ -176,7 +176,7 @@ public class DBC {
 				usr.setToken(generateToken());
 			}
 
-			return usr.getToken();//update на токена в login??????
+			return usr.getToken();// update на токена в login??????
 		} else {
 			if (checkUserExist(username, "")) {
 				return "Invalid password";
@@ -250,15 +250,68 @@ public class DBC {
 		return "Update failed!!";
 
 	}
-	
-	
-	
+
+	/*
+	 * Избор на отбор от базата, потребителя избира отбор с Id = 0, след което
+	 * се записва неговото Id в таблицата на отбора и Id н а отбора в таблица
+	 * login заявка -
+	 * http://localhost:8080/WebGame/db/pickteam?uid=1&teamid=3&token=
+	 * 000000000000&teamname=Barcelona
+	 */
+
+	@Path("/pickteam")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String pickTeam(@QueryParam("uid") int uid, @QueryParam("teamid") int teamid,
+			@QueryParam("token") String token, @QueryParam("teamname") String team) throws Exception {
+		if (checkTocken(token, uid)) {
+			String query = "UPDATE team SET UserId = '" + uid + "' WHERE Id = '" + teamid + "'";
+			String query2 = "UPDATE login SET Team = '" + team + "' WHERE Id = '" + uid + "'";
+			Class.forName(driver);
+			Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+			PreparedStatement st = conn.prepareStatement(query);
+			st.execute();
+			st = conn.prepareStatement(query2);
+			st.execute();
+			conn.close();
+			return "User picked team - " + team;
+		}
+		return "error";
+	}
+
+	/*
+	 * заявка за извеждане на своодните отбори
+	 * заявка - http://localhost:8080/WebGame/db/getteams
+	 */
+
+	@Path("/getteams")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String getAvailableTeams() throws Exception {
+		String result = "";
+		String query = "SELECT Id, Name, Stat1, Stat2, Stat3, Stat4 FROM team WHERE UserId = '0'";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		while (rs.next()) {
+			result += rs.getInt("Id") + "." + rs.getString("Name") + "." + rs.getInt("Stat1") + "." + rs.getInt("Stat2")
+					+ "." + rs.getInt("Stat3") + "." + rs.getInt("Stat4") + ";";
+		}
+		conn.close();
+		return result;
+
+	}
+
+	/*
+	 * тестов метод
+	 */
 	@Path("/test")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public User test(){
-		
-		User usr = new User(1,"myname");
+	public User test() {
+
+		User usr = new User(1, "myname");
 		return usr;
 	}
 

@@ -1,5 +1,8 @@
 package com.webgame.main;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class User {
 	
 	private String username;
@@ -10,6 +13,17 @@ public class User {
 	private String token;
 	private String status;
 	private int id;
+	
+	public User (){
+		
+	}
+	
+	public User(int id, String name){
+		this.id = id;
+		this.name = name;
+	}
+	
+	
 	
 	public int getId() {
 		return id;
@@ -33,10 +47,6 @@ public class User {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	public User (){
-		
 	}
 
 	public String getUsername() {

@@ -9,6 +9,9 @@
     <welcome-file>default.htm</welcome-file>
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
+  
+  
+  
   <servlet>
       <servlet-name>Web Game Main Web Service</servlet-name>
       <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -16,13 +19,17 @@
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>com.webgame.main</param-value>
          </init-param>
+         <init-param>
+
+        <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+
+        <param-value>true</param-value>
+
+    </init-param>
       </servlet>
    <servlet-mapping>
    <servlet-name>Web Game Main Web Service</servlet-name>
       <url-pattern>/*</url-pattern>
    </servlet-mapping>
-  
-  
-  
   
 </web-app>

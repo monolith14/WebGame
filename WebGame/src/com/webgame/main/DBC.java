@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Random;
-
 //импорт на джърси библиотеките
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -256,14 +255,11 @@ public class DBC {
 	
 	@Path("/test")
 	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public String test(){
-		String result="";
-		for(int i=0;i<100;i++){
-			
-			result += generateToken()+"</br>";
-		}
-		return result;
+	@Produces(MediaType.APPLICATION_JSON)
+	public User test(){
+		
+		User usr = new User(1,"myname");
+		return usr;
 	}
 
 }

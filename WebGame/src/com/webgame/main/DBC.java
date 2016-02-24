@@ -28,7 +28,8 @@ public class DBC {
 
 	/*
 	 * проверка за съществуващо потребителско име и парола в зависимост от това
-	 * какво се проверява, използва се при регистриране на нов акаунт връща
+	 * какво се проверява/ако паролата е празно поле се проверява само за
+	 * съществуващ потребител/, използва се при регистриране на нов акаунт връща
 	 * true/false , при регистрация се проверява само за потр. име, а при login
 	 * се проверява и парлата достъпен метод само за класа
 	 */
@@ -85,6 +86,20 @@ public class DBC {
 	}
 
 	/*
+	 * update на токен при login валидно само за класа с 2 подадени параметъра
+	 * id и token
+	 */
+	private String updateToken(int id, String token) throws Exception {
+		String query = "UPDATE login SET Token = '" + token + "' WHERE Id = '" + id + "'";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		PreparedStatement st = conn.prepareStatement(query);
+		st.execute();
+		conn.close();
+		return "Token update ok!";
+	}
+
+	/*
 	 * генериране на токен за login
 	 */
 
@@ -95,11 +110,11 @@ public class DBC {
 		for (int i = 0; i < 20; i++) {
 			xx = r.nextInt(3) + 1;
 			if (xx.equals(1)) {
-				token += (char) (48 + r.nextInt(10));
+				token += (char) (48 + r.nextInt(10));// цифри 1-0
 			} else if (xx.equals(2)) {
-				token += (char) (65 + r.nextInt(26));
+				token += (char) (65 + r.nextInt(26));// букви главни
 			} else if (xx.equals(3)) {
-				token += (char) (97 + r.nextInt(26));
+				token += (char) (97 + r.nextInt(26));// букви малки
 			}
 
 		}
@@ -148,15 +163,14 @@ public class DBC {
 
 	/*
 	 * Вход в системата, проверява се за валиден потребител и парола, ако се
-	 * върне true се генерира токен, записва се в базата и се сетва в куки, като
-	 * по-късно при промени и запис на данни в базата като статистика на отбора
-	 * се сравнява токена от кукито и този в базата заявка -
-	 * http://localhost:8080/WebGame/db/login?username=myname2&password=m
+	 * върне true се генерира токен, записва се в базата и се сетва в куки,
+	 * връща обект от клас User заявка
+	 * -http://localhost:8080/WebGame/db/login?username=myname2&password=m
 	 */
 	@Path("/login")
 	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public String webLogin(@QueryParam("username") String username, @QueryParam("password") String password)
+	@Produces(MediaType.APPLICATION_JSON)
+	public User webLogin(@QueryParam("username") String username, @QueryParam("password") String password)
 			throws Exception {
 		if (checkUserExist(username, password)) {
 			User usr = new User();
@@ -175,15 +189,10 @@ public class DBC {
 				usr.setTeam(rs.getString("Team"));
 				usr.setToken(generateToken());
 			}
-
-			return usr.getToken();// update на токена в login??????
-		} else {
-			if (checkUserExist(username, "")) {
-				return "Invalid password";
-			} else {
-				return "Invalid username!";
-			}
+			updateToken(usr.getId(), usr.getToken());
+			return usr;
 		}
+			return null;
 	}
 
 	/*
@@ -280,8 +289,8 @@ public class DBC {
 	}
 
 	/*
-	 * заявка за извеждане на своодните отбори
-	 * заявка - http://localhost:8080/WebGame/db/getteams
+	 * заявка за извеждане на своодните отбори заявка -
+	 * http://localhost:8080/WebGame/db/getteams
 	 */
 
 	@Path("/getteams")
@@ -305,6 +314,7 @@ public class DBC {
 
 	/*
 	 * тестов метод
+	 * ================създава обект от клас User и го връща в JSON
 	 */
 	@Path("/test")
 	@GET

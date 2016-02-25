@@ -192,7 +192,7 @@ public class DBC {
 			updateToken(usr.getId(), usr.getToken());
 			return usr;
 		}
-			return null;
+		return null;
 	}
 
 	/*
@@ -313,8 +313,42 @@ public class DBC {
 	}
 
 	/*
-	 * тестов метод
-	 * ================създава обект от клас User и го връща в JSON
+	 * извежда статистика на отбора за изиграни мачове победи, загуби т.н.
+	 * подава се id на отбора, връща обект от клас Team и JSON заявка -
+	 * http://localhost:8080/WebGame/db/teamstats?id=3
+	 */
+
+	@Path("/teamstats")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Team getTeamStatistics(@QueryParam("id") int id) throws Exception {
+		Team team = new Team();
+		String query = "SELECT * FROM team WHERE Id = '" + id + "'";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		if (rs.next()) {
+			team.setId(rs.getInt("Id"));
+			team.setName(rs.getString("Name"));
+			team.setUid(rs.getInt("UserId"));
+			team.setStat1(rs.getInt("Stat1"));
+			team.setStat2(rs.getInt("Stat2"));
+			team.setStat3(rs.getInt("Stat3"));
+			team.setStat4(rs.getInt("Stat4"));
+			team.setStat(rs.getInt("ExtraStat"));
+			team.setPlayed(rs.getInt("Played"));
+			team.setWons(rs.getInt("Wons"));
+			team.setDraws(rs.getInt("Drws"));
+			team.setLoss(rs.getInt("Loss"));
+			team.setGoals(rs.getInt("Goals"));
+			team.setPoints(rs.getInt("Points"));
+		}
+		return team;
+	}
+
+	/*
+	 * тестов метод ================създава обект от клас User и го връща в JSON
 	 */
 	@Path("/test")
 	@GET

@@ -128,11 +128,11 @@ public class Team {
 		this.stat4 = stat4;
 	}
 
-	public int getStat() {
+	public int getExtra() {
 		return extra;
 	}
 
-	public void setStat(int stat) {
+	public void setExtra(int stat) {
 		this.extra = stat;
 	}
 	

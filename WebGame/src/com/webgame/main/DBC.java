@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 //импорт на джърси библиотеките
 import javax.ws.rs.GET;
@@ -128,26 +130,25 @@ public class DBC {
 	 * &p2=password&name=myname проверка на паролите дали съвпадат/валидацията
 	 * по-добре да се прави с jquery/ ???? да се криптира паролата с md5????
 	 * заявка -
-	 * http://localhost:8080/WebGame/db/register?username=myname2&p1=2&p2=2&name
-	 * =myusername&mail=mymail
+	 * http://localhost:8080/WebGame/db/register?username=myname2&password=2&
+	 * name =myusername&mail=mymail
 	 */
 	@Path("/register")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String registerNewUser(@QueryParam("username") String username, @QueryParam("p1") String p1,
-			@QueryParam("p2") String p2, @QueryParam("mail") String mail, @QueryParam("name") String name)
-					throws Exception {
+	public String registerNewUser(@QueryParam("username") String username, @QueryParam("password") String password,
+			@QueryParam("mail") String mail, @QueryParam("name") String name) throws Exception {
 
-		if (username.equals("") || !p1.equals(p2) || mail.equals("") || name.equals("")) {
+		if (username.equals("") || mail.equals("") || name.equals("")) {
 			return "Check data fields!";
 		}
 		if (checkUserExist(username, "")) {
-			return "USer exist!";
+			return "User exist!";
 		}
 		User usr = new User();
 		usr.setName(name);
 		usr.setUsername(username);
-		usr.setPassword(p1);
+		usr.setPassword(password);
 		usr.setMail(mail);
 
 		String query = "INSERT INTO `login`(`Username`, `Password`, `Nickname`, `Status`, `Mail`) VALUES ('"
@@ -172,8 +173,8 @@ public class DBC {
 	@Produces(MediaType.APPLICATION_JSON)
 	public User webLogin(@QueryParam("username") String username, @QueryParam("password") String password)
 			throws Exception {
+		User usr = new User();
 		if (checkUserExist(username, password)) {
-			User usr = new User();
 			String query = "SELECT * FROM login WHERE Username = '" + username + "'";
 			Class.forName(driver);
 			Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
@@ -190,9 +191,9 @@ public class DBC {
 				usr.setToken(generateToken());
 			}
 			updateToken(usr.getId(), usr.getToken());
-			return usr;
+
 		}
-		return null;
+		return usr;
 	}
 
 	/*
@@ -295,20 +296,24 @@ public class DBC {
 
 	@Path("/getteams")
 	@GET
-	@Produces(MediaType.TEXT_HTML)
+	@Produces(MediaType.TEXT_PLAIN)
 	public String getAvailableTeams() throws Exception {
+		
 		String result = "";
-		String query = "SELECT Id, Name, Stat1, Stat2, Stat3, Stat4 FROM team WHERE UserId = '0'";
+		String query = "SELECT * FROM team WHERE UserId = '0'";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
+		List<String> teamList = new ArrayList<String>();
+		
 		while (rs.next()) {
-			result += rs.getInt("Id") + "." + rs.getString("Name") + "." + rs.getInt("Stat1") + "." + rs.getInt("Stat2")
-					+ "." + rs.getInt("Stat3") + "." + rs.getInt("Stat4") + ";";
+			result = rs.getInt("Id") + "|" + rs.getString("Name") + "|" + rs.getInt("Stat1") + "|" + rs.getInt("Stat2")
+					+ "|" + rs.getInt("Stat3") + "|" + rs.getInt("Stat4");
+			teamList.add(result);
 		}
 		conn.close();
-		return result;
+		return teamList.toString();
 
 	}
 
@@ -336,7 +341,7 @@ public class DBC {
 			team.setStat2(rs.getInt("Stat2"));
 			team.setStat3(rs.getInt("Stat3"));
 			team.setStat4(rs.getInt("Stat4"));
-			team.setStat(rs.getInt("ExtraStat"));
+			team.setExtra(rs.getInt("ExtraStat"));
 			team.setPlayed(rs.getInt("Played"));
 			team.setWons(rs.getInt("Wons"));
 			team.setDraws(rs.getInt("Drws"));

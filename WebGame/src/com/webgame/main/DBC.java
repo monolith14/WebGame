@@ -351,6 +351,30 @@ public class DBC {
 		}
 		return team;
 	}
+	
+	/*
+	 * Извежда таблица с класиране на отборите
+	 */
+	@Path("/getStandingTable")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String getStatndingTable() throws Exception{
+		String result = "";
+		String query = "SELECT team.*, login.Nickname AS LName FROM team LEFT JOIN login ON team.UserId = login.Id ORDER BY Points,Goals, Name";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		List<String> teamList = new ArrayList<String>();
+		
+		while (rs.next()) {
+			result = rs.getString("Name") + "|" + rs.getInt("Played") + "|" + rs.getInt("Wons")
+					+ "|" + rs.getInt("Drws") + "|" + rs.getInt("Loss")+ "|" + rs.getInt("Goals")+ "|" + rs.getInt("Points")+ "|" + rs.getString("LName");
+			teamList.add(result);
+		}
+		conn.close();
+		return teamList.toString();
+	}
 
 	/*
 	 * тестов метод ================създава обект от клас User и го връща в JSON

@@ -57,14 +57,19 @@ public class DBC {
 	 * подава стринг новата парола и id на потребител достъпен метод само за
 	 * класа
 	 */
-	private String changePassword(String password, int id) throws Exception {
-		String query = "UPDATE login SET Password = '" + password + "' WHERE Id = '" + id + "'";
+	private String changePassword(String passwordOld, String passwordNew, int id) throws Exception {
+		String query = "UPDATE login SET Password = '" + passwordNew + "' WHERE Id = '" + id + "' AND Password = '"
+				+ passwordOld + "'";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		PreparedStatement st = conn.prepareStatement(query);
-		st.execute();
+		int upd = st.executeUpdate();
+		if (upd == 0) {
+			conn.close();
+			return "Update error!";
+		}
 		conn.close();
-		return "Password changed!!";
+		return "Паролата е променена!";
 
 	}
 
@@ -198,40 +203,39 @@ public class DBC {
 
 	/*
 	 * промяна на потребителска парола заявка -
-	 * http://localhost:8080/WebGame/db/chpass?password=m22&id=1
+	 * http://localhost:8080/WebGame/db/chpass?passwordOld=m22&passwordNew=
+	 * asdasd&id=1
 	 */
 	@Path("/chpass")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String changeUserPassword(@QueryParam("password") String password, @QueryParam("id") int id)
-			throws Exception {
-		// да се направи проверка на подадени параметри и тогава да се извика
-		// changePassword ??? токен
+	public String changeUserPassword(@QueryParam("passwordOld") String passwordOld,
+			@QueryParam("passwordNew") String passwordNew, @QueryParam("id") int id) throws Exception {
 
-		return changePassword(password, id);
+		return changePassword(passwordOld, passwordNew, id);
 	}
 
 	/*
 	 * прочита и връща показателите на отбора по зададено id заявка -
-	 * http://localhost:8080/WebGame/db/getpt?id=1
+	 * http://localhost:8080/WebGame/db/getpt?team=Пирин
 	 */
 	@Path("/getpt")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String getPoints(@QueryParam("id") int id) throws Exception {
+	public String getPoints(@QueryParam("team") String team) throws Exception {
 		String result = null;
-		String query = "SELECT * FROM team WHERE Id = '" + id + "'";
+		String query = "SELECT * FROM team WHERE Name = '" + team + "'";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
+		List<String> statList = new ArrayList<String>();
 		if (rs.next()) {
-			result = "Показатели на " + rs.getString("Name") + "</br>Покзател1: " + rs.getInt("Stat1")
-					+ " т.</br>Показател2: " + rs.getInt("Stat2") + " т.</br>Показател3: " + rs.getInt("Stat3")
-					+ " т.</br>Показател4: " + rs.getInt("Stat4") + " т.</br>За разпределяне: "
-					+ rs.getInt("ExtraStat");
+			result = rs.getInt("Stat1") + "|" + rs.getInt("Stat2") + "|" + rs.getInt("Stat3") + "|" + rs.getInt("Stat4")
+					+ "|" + rs.getInt("ExtraStat");
+			statList.add(result);
 		}
-		return result;
+		return statList.toString();
 	}
 
 	/*
@@ -298,7 +302,7 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getAvailableTeams() throws Exception {
-		
+
 		String result = "";
 		String query = "SELECT * FROM team WHERE UserId = '0'";
 		Class.forName(driver);
@@ -306,7 +310,7 @@ public class DBC {
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		List<String> teamList = new ArrayList<String>();
-		
+
 		while (rs.next()) {
 			result = rs.getInt("Id") + "|" + rs.getString("Name") + "|" + rs.getInt("Stat1") + "|" + rs.getInt("Stat2")
 					+ "|" + rs.getInt("Stat3") + "|" + rs.getInt("Stat4");
@@ -351,25 +355,26 @@ public class DBC {
 		}
 		return team;
 	}
-	
+
 	/*
 	 * Извежда таблица с класиране на отборите
 	 */
 	@Path("/getStandingTable")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String getStatndingTable() throws Exception{
+	public String getStatndingTable() throws Exception {
 		String result = "";
-		String query = "SELECT team.*, login.Nickname AS LName FROM team LEFT JOIN login ON team.UserId = login.Id ORDER BY Points,Goals, Name";
+		String query = "SELECT team.*, login.Nickname AS LName FROM team LEFT JOIN login ON team.UserId = login.Id ORDER BY Points DESC ,Goals DESC, Name ASC";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		List<String> teamList = new ArrayList<String>();
-		
+
 		while (rs.next()) {
-			result = rs.getString("Name") + "|" + rs.getInt("Played") + "|" + rs.getInt("Wons")
-					+ "|" + rs.getInt("Drws") + "|" + rs.getInt("Loss")+ "|" + rs.getInt("Goals")+ "|" + rs.getInt("Points")+ "|" + rs.getString("LName");
+			result = rs.getString("Name") + "|" + rs.getInt("Played") + "|" + rs.getInt("Wons") + "|"
+					+ rs.getInt("Drws") + "|" + rs.getInt("Loss") + "|" + rs.getInt("Goals") + "|" + rs.getInt("Points")
+					+ "|" + rs.getString("LName");
 			teamList.add(result);
 		}
 		conn.close();

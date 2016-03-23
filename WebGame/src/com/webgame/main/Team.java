@@ -18,8 +18,17 @@ public class Team {
 	private int loss;
 	private int goals;
 	private int points;
+	private int money;
 	
 	
+	public int getMoney() {
+		return money;
+	}
+
+	public void setMoney(int money) {
+		this.money = money;
+	}
+
 	public int getPlayed() {
 		return played;
 	}

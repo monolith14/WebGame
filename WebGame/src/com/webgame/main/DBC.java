@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 //импорт на джърси библиотеките
@@ -16,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.ParseConversionEvent;
 
 //път за URL за достъп до уеб сървиса  http://localhost:8080/webgame/db/...
 //за всеки метод се добавя нова стойност с @Path(/mymethod) и се достъпва чрез  http://localhost:8080/webgame/db/mymethod/
@@ -130,6 +133,29 @@ public class DBC {
 	}
 
 	/*
+	 * генериране на име от базата данни, private метод достъпва се от
+	 * генератора на играчи
+	 */
+	private String generatePlayerName() throws Exception {
+		String name = "";
+		String query1 = "SELECT Name FROM firstname ORDER BY RAND() LIMIT 1";
+		String query2 = "SELECT Name FROM lastname ORDER BY RAND() LIMIT 1";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query1);
+		if (rs.next()) {
+			name += rs.getString("Name") + " ";
+		}
+		rs = st.executeQuery(query2);
+		if (rs.next()) {
+			name += rs.getString("Name");
+		}
+
+		return name;
+	}
+
+	/*
 	 * регистрация на нов потребител достъпва се на адрес
 	 * http://localhost:8080/webgame/db/register?username=myusername&p1=password
 	 * &p2=password&name=myname проверка на паролите дали съвпадат/валидацията
@@ -180,11 +206,13 @@ public class DBC {
 			throws Exception {
 		User usr = new User();
 		if (checkUserExist(username, password)) {
-			String query = "SELECT * FROM login WHERE Username = '" + username + "'";
+			String query = "SELECT login.*, team.Name as tTeam FROM login LEFT JOIN team ON login.Team = team.Id WHERE Username = '"
+					+ username + "'";
 			Class.forName(driver);
 			Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 			Statement st = conn.createStatement();
 			ResultSet rs = st.executeQuery(query);
+			String teamName = "0";
 			if (rs.next()) {
 				usr.setId(rs.getInt("Id"));
 				usr.setName(rs.getString("Nickname"));
@@ -192,7 +220,10 @@ public class DBC {
 				usr.setUsername(rs.getString("Username"));
 				usr.setPassword(rs.getString("Password"));
 				usr.setStatus(rs.getString("Status"));
-				usr.setTeam(rs.getString("Team"));
+				if (rs.getString("tTeam") != null) {
+					teamName = rs.getString("tTeam");
+				}
+				usr.setTeam(teamName);
 				usr.setToken(generateToken());
 			}
 			updateToken(usr.getId(), usr.getToken());
@@ -216,7 +247,7 @@ public class DBC {
 	}
 
 	/*
-	 * прочита и връща показателите на отбора по зададено id заявка - 
+	 * прочита и връща показателите на отбора по зададено id заявка -
 	 * http://localhost:8080/WebGame/db/getpt?team=Пирин
 	 */
 	@Path("/getpt")
@@ -280,7 +311,7 @@ public class DBC {
 			@QueryParam("token") String token, @QueryParam("teamname") String team) throws Exception {
 		if (checkTocken(token, uid)) {
 			String query = "UPDATE team SET UserId = '" + uid + "' WHERE Id = '" + teamid + "'";
-			String query2 = "UPDATE login SET Team = '" + team + "' WHERE Id = '" + uid + "'";
+			String query2 = "UPDATE login SET Team = '" + teamid + "' WHERE Id = '" + uid + "'";
 			Class.forName(driver);
 			Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 			PreparedStatement st = conn.prepareStatement(query);
@@ -288,7 +319,7 @@ public class DBC {
 			st = conn.prepareStatement(query2);
 			st.execute();
 			conn.close();
-			return "User picked team - " + team;
+			return "Избран клуб - " + team;
 		}
 		return "error";
 	}
@@ -352,6 +383,7 @@ public class DBC {
 			team.setLoss(rs.getInt("Loss"));
 			team.setGoals(rs.getInt("Goals"));
 			team.setPoints(rs.getInt("Points"));
+			team.setMoney(rs.getInt("Money"));
 		}
 		return team;
 	}
@@ -382,15 +414,223 @@ public class DBC {
 	}
 
 	/*
-	 * тестов метод ================създава обект от клас User и го връща в JSON
+	 * admin метод стартира се в началото на играта генерира играч 1-генерира
+	 * име 2-генериране на играч от класа Player 3-записва резултата в базата
+	 * заявка http://localhost:8080/WebGame/db/createplayer?qty=5
+	 */
+	@Path("/createplayer")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String createPlayer(@QueryParam("qty") int qty) throws ClassNotFoundException, Exception {
+		String query = "";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		int tmpIntValue, tmpOAll;
+		int tmpA = 0;
+		int tmpD = 0;
+		int tmpT = 0;
+		int tmpS = 0;
+		Random r = new Random();
+		Player player = new Player();
+		for (int i = 0; i < qty; i++) {
+			player.setName(generatePlayerName());
+			// генериране на age 19 - 33, ако е над 24 вадим 4 за да се
+			// генерират по-млади играчи
+			tmpIntValue = 19 + r.nextInt(14);
+			if (tmpIntValue > 24) {
+				tmpIntValue -= 4;
+			}
+			player.setAge(tmpIntValue);
+			// задаване на ОА точките в зависимост от age
+			tmpOAll = tmpIntValue + 3;
+			if (tmpIntValue > 20 && tmpIntValue <= 26) {
+				tmpOAll += 6;
+			} else if (tmpIntValue > 26) {
+				tmpOAll += 4;
+			}
+			// генериране на позиция
+			// 0-12 вратар, 13-38 защ., 39-80център, 81-99 нап.
+			tmpIntValue = r.nextInt(100);
+			if (tmpIntValue < 12) {
+				player.setPrimePosition(1);
+			} else if (tmpIntValue > 12 && tmpIntValue <= 38) {
+				player.setPrimePosition(2);
+			} else if (tmpIntValue > 38 && tmpIntValue <= 80) {
+				player.setPrimePosition(3);
+			} else if (tmpIntValue > 80) {
+				player.setPrimePosition(4);
+			}
+			// генериране на показателите
+			// 19-22(19-22),23-26(23-26(+6),26-33(26-33(+4)),
+			switch (player.getPrimePosition()) {
+			case 1:
+				tmpA = (int) Math.round(tmpOAll * 0.05);
+				tmpD = (int) Math.round(tmpOAll * 0.7);
+				tmpS = r.nextInt((int) Math.round(1 + (tmpOAll * 0.24)));
+				tmpT = tmpOAll - (tmpA + tmpS + tmpD) + 1;
+				player.setS1(tmpA);
+				player.setS2(tmpD);
+				player.setS3(tmpS);
+				player.setS4(tmpT);
+				break;
+			case 2:
+				tmpA = (int) Math.round(tmpOAll * 0.1);
+				tmpD = (int) Math.round(tmpOAll * 0.6);
+				tmpS = r.nextInt((int) Math.round(1 + (tmpOAll * 0.29)));
+				tmpT = tmpOAll - (tmpA + tmpS + tmpD) + 1;
+				player.setS1(tmpA);
+				player.setS2(tmpD);
+				player.setS3(tmpS);
+				player.setS4(tmpT);
+				break;
+			case 3:
+				List<Integer> lst = new ArrayList<>();
+				lst.add(1);
+				lst.add(2);
+				lst.add(3);
+				lst.add(4);
+				Collections.shuffle(lst);
+				// проверка 1 елемент
+				switch (lst.get(0)) {
+				case 1:
+					tmpA = (int) Math.round(tmpOAll * 0.5);
+					break;
+				case 2:
+					tmpD = (int) Math.round(tmpOAll * 0.5);
+					break;
+				case 3:
+					tmpS = (int) Math.round(tmpOAll * 0.5);
+					break;
+				case 4:
+					tmpT = (int) Math.round(tmpOAll * 0.5);
+					break;
+				}
+				// проверка на втори елемент
+				switch (lst.get(1)) {
+				case 1:
+					tmpA = (int) Math.round(tmpOAll * 0.35);
+					break;
+				case 2:
+					tmpD = (int) Math.round(tmpOAll * 0.35);
+					break;
+				case 3:
+					tmpS = (int) Math.round(tmpOAll * 0.35);
+					break;
+				case 4:
+					tmpT = (int) Math.round(tmpOAll * 0.35);
+					break;
+				}
+				// проверка 3 елемент
+				switch (lst.get(2)) {
+				case 1:
+					tmpA = (int) Math.round(tmpOAll * 0.1);
+					break;
+				case 2:
+					tmpD = (int) Math.round(tmpOAll * 0.1);
+					break;
+				case 3:
+					tmpS = (int) Math.round(tmpOAll * 0.1);
+					break;
+				case 4:
+					tmpT = (int) Math.round(tmpOAll * 0.1);
+					break;
+				}
+				// проверка четвърти елемнт
+				switch (lst.get(3)) {
+				case 1:
+					tmpA = (int) Math.round(tmpOAll * 0.05);
+					break;
+				case 2:
+					tmpD = (int) Math.round(tmpOAll * 0.05);
+					break;
+				case 3:
+					tmpS = (int) Math.round(tmpOAll * 0.05);
+					break;
+				case 4:
+					tmpT = (int) Math.round(tmpOAll * 0.05);
+					break;
+				}
+				player.setS1(tmpA);
+				player.setS2(tmpD);
+				player.setS3(tmpS);
+				player.setS4(tmpT);
+				break;
+			case 4:
+				tmpA = (int) Math.round(tmpOAll * 0.7);
+				tmpD = (int) Math.round(tmpOAll * 0.05);
+				tmpS = r.nextInt((int) Math.round(1 + (tmpOAll * 0.23)));
+				tmpT = tmpOAll - (tmpA + tmpS + tmpD) + 1;
+				player.setS1(tmpA);
+				player.setS2(tmpD);
+				player.setS3(tmpS);
+				player.setS4(tmpT);
+				break;
+			}
+			// талант на играча, в % да се има напредвид при повишаване на
+			// показателите
+			player.setTallent(1 + r.nextInt(10));
+			// цена на играча - база 100 000*(талант*коеф за възраст)%
+			switch (player.getAge()) {
+			case 19:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.30)));
+				break;
+			case 20:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.28)));
+				break;
+			case 21:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.26)));
+				break;
+			case 22:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.24)));
+				break;
+			case 23:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.22)));
+				break;
+			case 24:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.20)));
+				break;
+			case 25:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.16)));
+				break;
+			case 26:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.12)));
+				break;
+			case 27:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.10)));
+				break;
+			default:
+				player.setMoney((int) (100000 * (player.getTallent() * 0.08)));
+				break;
+			}
+
+			// insert v bazata
+			query = "INSERT INTO `players`(`Name`, `Age`, `s1`, `s2`, `s3`, `s4`, `Tallent`, `PrimePosition`, `Money`) VALUES ('"
+					+ player.getName() + "','" + player.getAge() + "','" + player.getS1() + "','" + player.getS2()
+					+ "','" + player.getS3() + "','" + player.getS4() + "','" + player.getTallent() + "','"
+					+ player.getPrimePosition() + "','" + player.getMoney() + "')";
+			PreparedStatement st = conn.prepareStatement(query);
+			st.execute();
+		}
+		conn.close();
+		return "Insert ok";
+
+		// return " Godini:" + player.getAge() + ";Poziciq:" +
+		// player.getPrimePosition() + "; Ataka: " + player.getS1()
+		// + ";Zashtita: " + player.getS2() + ";Skorost: " + player.getS3() +
+		// ";Tehnika: " + player.getS4()
+		// + ";talant: " + player.getTallent() + ";money: " + player.getMoney();
+	}
+
+	/*
+	 * тестов метод ================
 	 */
 	@Path("/test")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public User test() {
-
+	public User[] test() {
 		User usr = new User(1, "myname");
-		return usr;
+		User usr2 = new User(2, "myname2");
+		User retval[] = new User[] { usr, usr2 };
+		return retval;
 	}
-
 }

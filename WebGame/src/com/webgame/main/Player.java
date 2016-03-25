@@ -1,6 +1,5 @@
 package com.webgame.main;
 
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -13,14 +12,29 @@ public class Player {
 	private int s3;
 	private int s4;
 	private int tallent;
-	private int team;
+	private int teamId;
 	private int position;
 	private int condition;
 	private int primePosition;
 	private int money;
+	private int playNumber;
 
 	public Player() {
 
+	}
+
+	public Player(int id, String name) {
+		this.id = id;
+		this.name = name;
+
+	}
+
+	public int getPlayNumber() {
+		return playNumber;
+	}
+
+	public void setPlayNumber(int playNumber) {
+		this.playNumber = playNumber;
 	}
 
 	public int getId() {
@@ -87,14 +101,6 @@ public class Player {
 		this.tallent = tallent;
 	}
 
-	public int getTeam() {
-		return team;
-	}
-
-	public void setTeam(int team) {
-		this.team = team;
-	}
-
 	public int getPosition() {
 		return position;
 	}
@@ -126,6 +132,13 @@ public class Player {
 	public void setMoney(int money) {
 		this.money = money;
 	}
-	
+
+	public int getTeamId() {
+		return teamId;
+	}
+
+	public void setTeamId(int teamId) {
+		this.teamId = teamId;
+	}
 
 }

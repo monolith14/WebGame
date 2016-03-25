@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -151,7 +152,7 @@ public class DBC {
 		if (rs.next()) {
 			name += rs.getString("Name");
 		}
-
+		conn.close();
 		return name;
 	}
 
@@ -389,7 +390,8 @@ public class DBC {
 	}
 
 	/*
-	 * Извежда таблица с класиране на отборите
+	 * Извежда таблица с класиране на отборите заявка
+	 * http://localhost:8080/WebGame/db/getStandingTable/
 	 */
 	@Path("/getStandingTable")
 	@GET
@@ -604,7 +606,7 @@ public class DBC {
 			}
 
 			// insert v bazata
-			query = "INSERT INTO `players`(`Name`, `Age`, `s1`, `s2`, `s3`, `s4`, `Tallent`, `PrimePosition`, `Money`) VALUES ('"
+			query = "INSERT INTO `players`(`Name`, `Age`, `S1`, `S2`, `S3`, `S4`, `Tallent`, `PrimePosition`, `Money`) VALUES ('"
 					+ player.getName() + "','" + player.getAge() + "','" + player.getS1() + "','" + player.getS2()
 					+ "','" + player.getS3() + "','" + player.getS4() + "','" + player.getTallent() + "','"
 					+ player.getPrimePosition() + "','" + player.getMoney() + "')";
@@ -612,13 +614,170 @@ public class DBC {
 			st.execute();
 		}
 		conn.close();
-		return "Insert ok";
+		return "JOB DONE!";
 
-		// return " Godini:" + player.getAge() + ";Poziciq:" +
-		// player.getPrimePosition() + "; Ataka: " + player.getS1()
-		// + ";Zashtita: " + player.getS2() + ";Skorost: " + player.getS3() +
-		// ";Tehnika: " + player.getS4()
-		// + ";talant: " + player.getTallent() + ";money: " + player.getMoney();
+	}
+
+	/*
+	 * админ метод за разпределяне на играчите в отбори,
+	 * вратар(2)защитник(5)център(7)нападател(4)- 18 играча заявка
+	 * http://localhost:8080/WebGame/db/distributeplayers
+	 */
+	@Path("/distributeplayers")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String distributePlayers() throws Exception {
+		// заявка за извеждане на Id на отборите
+		String query1 = "SELECT Id FROM Team";
+		String query2, condPos;
+		String returnlist = null;
+		int teamId, playerId, tempNum;
+		// списък с Id на отборите
+		List<Integer> teamList = new ArrayList<Integer>();
+		// временен лист, вкойто се вкарват играчите за разпределение във всеки
+		// отбор(18 играча разделени:вратари2, защ5, цент7 нап4)
+		List<Integer> tempList = new ArrayList<Integer>();
+		// лист със номерата на играчите
+		List<Integer> tempNumbersList = new ArrayList<>();
+
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		PreparedStatement st2 = null;
+		ResultSet rs = st.executeQuery(query1);
+		// извеждане на Id на отборите в лист
+		while (rs.next()) {
+			teamList.add(rs.getInt("Id"));
+		}
+		returnlist += teamList.toString();
+		// разбъркване на елементите на листа за по-изравнен шанс
+		Collections.shuffle(teamList);
+		// за всеки елемент(отбор) в листа избираме произволни играчи и ги
+		// вкарваме в темп лист, след което ъпдейтваме всички с Id на отбора
+		for (int i = 0; i < teamList.size(); i++) {
+			// задаване на номерата от 2 до 42
+			tempNumbersList = Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+					23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42);
+			// разбъркване на листа
+			Collections.shuffle(tempNumbersList);
+			// ако първият елемент е < 18 и >28 добавяме 1 на 2-ра позиция в
+			// листа за да се назначи номер на вратаря
+			if (tempNumbersList.get(0) < 18 || tempNumbersList.get(0) > 28) {
+				tempNumbersList.add(1, 1);
+			}
+			// заявка за произволни 2 играч на позиция вратар
+			query2 = "SELECT Id FROM players WHERE PrimePosition = '1' AND TeamId = '0' ORDER BY RAND() LIMIT 2";
+			rs = st.executeQuery(query2);
+			while (rs.next()) {
+				tempList.add(rs.getInt("Id"));
+			}
+			// заявка за произволни 5 играча за защитник
+			query2 = "SELECT Id FROM players WHERE PrimePosition = '2' AND TeamId = '0' ORDER BY RAND() LIMIT 5";
+			rs = st.executeQuery(query2);
+			while (rs.next()) {
+				tempList.add(rs.getInt("Id"));
+			}
+			// заявка за произволни 7 играча за център
+			query2 = "SELECT Id FROM players WHERE PrimePosition = '3' AND TeamId = '0' ORDER BY RAND() LIMIT 7";
+			rs = st.executeQuery(query2);
+			while (rs.next()) {
+				tempList.add(rs.getInt("Id"));
+			}
+			// заявка за произволни 4 играча за нападател
+			query2 = "SELECT Id FROM players WHERE PrimePosition = '4' AND TeamId = '0' ORDER BY RAND() LIMIT 4";
+			rs = st.executeQuery(query2);
+			while (rs.next()) {
+				tempList.add(rs.getInt("Id"));
+			}
+
+			returnlist += "</br>otbor " + (i + 1) + "-" + tempList.toString();
+			teamId = teamList.get(i);
+			// ъпдейт на играчите с Id на отбора, като се назначават и номерата
+			// от временния лист и позиции, като първоначалната схема е 4-4-2
+			for (int j = 0; j < tempList.size(); j++) {
+				playerId = tempList.get(j);
+				if (j == 4 || j == 9 || j == 12 || j == 14 || j == 16 || j == 17) {
+					condPos = "0";
+				} else {
+					condPos = Integer.toString(j);
+				}
+				tempNum = tempNumbersList.get(j);
+				query2 = "UPDATE players SET TeamId = '" + teamId + "',Position ='" + condPos + "', PlayNumber ='"
+						+ tempNum + "' WHERE Id='" + playerId + "'";
+				st2 = conn.prepareStatement(query2);
+				st2.execute();
+			}
+			tempList.clear();
+		}
+		conn.close();
+		return returnlist;
+	}
+
+	/*
+	 * връща обект от клас Player в JSON формат по зададено Id заявка
+	 * http://localhost:8080/WebGame/db/getplayer?id=1
+	 */
+	@Path("/getplayer")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Player getPlayerById(@QueryParam("id") int id) throws Exception {
+		String query = "SELECT * FROM players WHERE Id='" + id + "'";
+		Player pl = new Player();
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		if (rs.next()) {
+			pl.setId(rs.getInt("Id"));
+			pl.setName(rs.getString("Name"));
+			pl.setAge(rs.getInt("Age"));
+			pl.setS1(rs.getInt("S1"));
+			pl.setS2(rs.getInt("S2"));
+			pl.setS3(rs.getInt("S3"));
+			pl.setS4(rs.getInt("S4"));
+			pl.setTallent(rs.getInt("Tallent"));
+			pl.setTeamId(rs.getInt("TeamId"));
+			pl.setPosition(rs.getInt("Position"));
+			pl.setCondition(rs.getInt("Condition"));
+			pl.setPrimePosition(rs.getInt("PrimePosition"));
+			pl.setMoney(rs.getInt("Money"));
+			pl.setPlayNumber(rs.getInt("PlayNumber"));
+		}
+		conn.close();
+		return pl;
+	}
+
+	/*
+	 * групиране на отбора, създава обект от клас Playstyle и го връща в JSON
+	 * заявка http://localhost:8080/WebGame/db/groupteam?teamid=4
+	 */
+	@Path("/groupteam")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Playstyle groupTeam(@QueryParam("teamid") int teamid) throws Exception {
+		String query = "SELECT Id,Position FROM players WHERE TeamId = '" + teamid
+				+ "' AND Position != '0' ORDER BY Position ASC";
+		List<Integer> teamList = new ArrayList<>();
+		Playstyle pl = new Playstyle();
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		while (rs.next()) {
+			teamList.add(rs.getInt("Id"));
+		}
+		pl.setGk(getPlayerById(teamList.get(0)));
+		pl.setDf1(getPlayerById(teamList.get(1)));
+		pl.setDf2(getPlayerById(teamList.get(2)));
+		pl.setDf4(getPlayerById(teamList.get(3)));
+		pl.setDf5(getPlayerById(teamList.get(4)));
+		pl.setMd1(getPlayerById(teamList.get(5)));
+		pl.setMd2(getPlayerById(teamList.get(6)));
+		pl.setMd4(getPlayerById(teamList.get(7)));
+		pl.setMd5(getPlayerById(teamList.get(8)));
+		pl.setFw2(getPlayerById(teamList.get(9)));
+		pl.setFw4(getPlayerById(teamList.get(10)));
+		return pl;
 	}
 
 	/*
@@ -627,10 +786,11 @@ public class DBC {
 	@Path("/test")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public User[] test() {
-		User usr = new User(1, "myname");
-		User usr2 = new User(2, "myname2");
-		User retval[] = new User[] { usr, usr2 };
-		return retval;
+	public Playstyle test() {
+		Player pl = new Player(1, "Novo ime ooD");
+		Playstyle plstl = new Playstyle();
+		plstl.setGk(pl);
+		plstl.setDf1(pl);
+		return plstl;
 	}
 }

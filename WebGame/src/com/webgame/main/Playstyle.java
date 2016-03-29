@@ -27,6 +27,9 @@ public class Playstyle {
 	private Player r5;
 	private Player r6;
 	private Player r7;
+	private int df;
+	private int md;
+	private int fw;
 
 	public Playstyle(){
 		
@@ -262,6 +265,37 @@ public class Playstyle {
 	public void setR7(Player r7) {
 		this.r7 = r7;
 	}
+
+
+	public int getDf() {
+		return df;
+	}
+
+
+	public void setDf(int df) {
+		this.df = df;
+	}
+
+
+	public int getMd() {
+		return md;
+	}
+
+
+	public void setMd(int md) {
+		this.md = md;
+	}
+
+
+	public int getFw() {
+		return fw;
+	}
+
+
+	public void setFw(int fw) {
+		this.fw = fw;
+	}
+	
 	
 
 }

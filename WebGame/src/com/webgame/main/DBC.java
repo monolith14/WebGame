@@ -221,6 +221,7 @@ public class DBC {
 				usr.setUsername(rs.getString("Username"));
 				usr.setPassword(rs.getString("Password"));
 				usr.setStatus(rs.getString("Status"));
+				usr.setTeamId(rs.getInt("Team"));
 				if (rs.getString("tTeam") != null) {
 					teamName = rs.getString("tTeam");
 				}
@@ -629,7 +630,8 @@ public class DBC {
 	public String distributePlayers() throws Exception {
 		// заявка за извеждане на Id на отборите
 		String query1 = "SELECT Id FROM Team";
-		String query2, condPos;
+		String query2;
+		String condPos = null;
 		String returnlist = null;
 		int teamId, playerId, tempNum;
 		// списък с Id на отборите
@@ -656,8 +658,9 @@ public class DBC {
 		// вкарваме в темп лист, след което ъпдейтваме всички с Id на отбора
 		for (int i = 0; i < teamList.size(); i++) {
 			// задаване на номерата от 2 до 42
-			tempNumbersList = Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-					23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42);
+			for(int ii = 2;ii<42;ii++){
+				tempNumbersList.add(ii);
+			}
 			// разбъркване на листа
 			Collections.shuffle(tempNumbersList);
 			// ако първият елемент е < 18 и >28 добавяме 1 на 2-ра позиция в
@@ -696,8 +699,23 @@ public class DBC {
 			// от временния лист и позиции, като първоначалната схема е 4-4-2
 			for (int j = 0; j < tempList.size(); j++) {
 				playerId = tempList.get(j);
-				if (j == 4 || j == 9 || j == 12 || j == 14 || j == 16 || j == 17) {
-					condPos = "0";
+				if (j == 4 || j == 9 || j > 11) {
+					switch (j) {
+					case 4:
+					case 9:
+					case 12:
+					case 13:
+					case 14:
+					case 17:
+						condPos = "0";
+						break;
+					case 15:
+						condPos = "13";
+						break;
+					case 16:
+						condPos = "15";
+						break;
+					}
 				} else {
 					condPos = Integer.toString(j);
 				}
@@ -755,28 +773,100 @@ public class DBC {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Playstyle groupTeam(@QueryParam("teamid") int teamid) throws Exception {
-		String query = "SELECT Id,Position FROM players WHERE TeamId = '" + teamid
-				+ "' AND Position != '0' ORDER BY Position ASC";
-		List<Integer> teamList = new ArrayList<>();
+		String query = "SELECT Id,Position FROM players WHERE TeamId = '" + teamid + "'";
+		List<Integer> teamListR = new ArrayList<>();
+		int df = 0;
+		int md = 0;
+		int fw = 0;
 		Playstyle pl = new Playstyle();
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		while (rs.next()) {
-			teamList.add(rs.getInt("Id"));
+			switch (rs.getInt("Position")) {
+			case 0:
+				teamListR.add(rs.getInt("Id"));
+				break;
+			case 1:
+				pl.setGk(getPlayerById(rs.getInt("Id")));
+				break;
+			case 2:
+				pl.setDf1(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 3:
+				pl.setDf2(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 4:
+				pl.setDf3(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 5:
+				pl.setDf4(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 6:
+				pl.setDf5(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 7:
+				pl.setMd1(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 8:
+				pl.setMd2(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 9:
+				pl.setMd3(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 10:
+				pl.setMd4(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 11:
+				pl.setMd5(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 12:
+				pl.setFw1(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 13:
+				pl.setFw2(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 14:
+				pl.setFw3(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 15:
+				pl.setFw4(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 16:
+				pl.setFw5(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+
+			}
+
+			// teamList.add(rs.getInt("Id"));
 		}
-		pl.setGk(getPlayerById(teamList.get(0)));
-		pl.setDf1(getPlayerById(teamList.get(1)));
-		pl.setDf2(getPlayerById(teamList.get(2)));
-		pl.setDf4(getPlayerById(teamList.get(3)));
-		pl.setDf5(getPlayerById(teamList.get(4)));
-		pl.setMd1(getPlayerById(teamList.get(5)));
-		pl.setMd2(getPlayerById(teamList.get(6)));
-		pl.setMd4(getPlayerById(teamList.get(7)));
-		pl.setMd5(getPlayerById(teamList.get(8)));
-		pl.setFw2(getPlayerById(teamList.get(9)));
-		pl.setFw4(getPlayerById(teamList.get(10)));
+		pl.setR1(getPlayerById(teamListR.get(0)));
+		pl.setR2(getPlayerById(teamListR.get(1)));
+		pl.setR3(getPlayerById(teamListR.get(2)));
+		pl.setR4(getPlayerById(teamListR.get(3)));
+		pl.setR5(getPlayerById(teamListR.get(4)));
+		pl.setR6(getPlayerById(teamListR.get(5)));
+		pl.setR7(getPlayerById(teamListR.get(6)));
+		pl.setDf(df);
+		pl.setMd(md);
+		pl.setFw(fw);
+		conn.close();
 		return pl;
 	}
 

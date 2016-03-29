@@ -13,6 +13,7 @@ public class User {
 	private String token;
 	private String status;
 	private int id;
+	private int teamId;
 	
 	public User (){
 		
@@ -88,6 +89,15 @@ public class User {
 	public void setTeam(String team) {
 		this.team = team;
 	}
+
+	public int getTeamId() {
+		return teamId;
+	}
+
+	public void setTeamId(int teamId) {
+		this.teamId = teamId;
+	}
+	
 	
 
 }

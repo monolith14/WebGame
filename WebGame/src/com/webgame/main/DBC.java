@@ -8,8 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -19,7 +17,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.xml.bind.ParseConversionEvent;
 
 //път за URL за достъп до уеб сървиса  http://localhost:8080/webgame/db/...
 //за всеки метод се добавя нова стойност с @Path(/mymethod) и се достъпва чрез  http://localhost:8080/webgame/db/mymethod/
@@ -658,7 +655,7 @@ public class DBC {
 		// вкарваме в темп лист, след което ъпдейтваме всички с Id на отбора
 		for (int i = 0; i < teamList.size(); i++) {
 			// задаване на номерата от 2 до 42
-			for(int ii = 2;ii<42;ii++){
+			for (int ii = 2; ii < 42; ii++) {
 				tempNumbersList.add(ii);
 			}
 			// разбъркване на листа
@@ -870,6 +867,240 @@ public class DBC {
 		return pl;
 	}
 
+	/*
+	 * генериране на програма по система всеки-срещу-всеки
+	 * с разменено гостуване, стартира се еднократно при започване на сезона
+	 * заявка: http://localhost:8080/WebGame/db/createrounds
+	 */
+	@Path("/createrounds")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String createrounds() throws Exception {
+		String result = "", query = "SELECT * FROM team";
+		String[] s1, s2;
+		String tVal = null;
+		int i = 0, j = 0,kr = 1;
+		List<String> allPairList = new ArrayList<String>();
+		List<String> roundsList = new ArrayList<String>();
+		List<String> singleRoundList = new ArrayList<String>();
+		List<String> tList = new ArrayList<String>();// za otborite ot bazata
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		while (rs.next()) {
+			tList.add(rs.getString("Name"));
+		}
+
+		for (i = 0; i < tList.size(); i++) {
+			for (j = i; j < tList.size(); j++) {
+				if (i != j) {
+					allPairList.add(tList.get(i) + ":" + tList.get(j));
+				}
+			}
+
+		}
+		
+		while(!allPairList.isEmpty()){
+			singleRoundList.add(allPairList.get(0));
+				for(String elm:allPairList){
+					s1=elm.split(":");
+					for(String elm2:singleRoundList){
+						s2 = elm2.split(":");
+						if(s1[0].equals(s2[0])||s1[1].equals(s2[1])||s1[0].equals(s2[1])||s1[1].equals(s2[0])){
+							tVal="";
+							break;
+						}
+						else{
+							tVal=elm;
+						}
+						
+					}
+					if(!tVal.equals("")){
+					singleRoundList.add(tVal);
+					}
+			}
+			for(String elmnt:singleRoundList){
+				allPairList.remove(elmnt);
+			}
+			roundsList.add(singleRoundList.toString());
+			singleRoundList.clear();
+			
+		}
+		Collections.shuffle(roundsList);
+		
+		for(String lst:roundsList){
+			result+="============== Кръг "+kr+" =====================</br>";
+			lst=lst.replace("[", "");
+			lst=lst.replace("]", "");
+			s1=lst.split(",");
+			for(i=0;i<s1.length;i++){
+				s2 = s1[i].split(":");
+				result += s1[i]+"</br>";
+				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[0]+"','"+s2[1]+"')";
+				PreparedStatement st2 = conn.prepareStatement(query);
+				st2.execute();
+			}
+			kr++;
+		}
+		for(String lst:roundsList){
+			result+="============== Кръг "+kr+" =====================</br>";
+			lst=lst.replace("[", "");
+			lst=lst.replace("]", "");
+			s1=lst.split(",");
+			for(i=0;i<s1.length;i++){
+				s2 = s1[i].split(":");
+				result += s1[i]+"</br>";
+				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[1]+"','"+s2[0]+"')";
+				PreparedStatement st3 = conn.prepareStatement(query);
+				st3.execute();
+			}
+			kr++;
+		}
+		
+		conn.close();
+		return result;
+	}
+	
+	
+	
+	/*
+	 * 
+	 */
+	
+	public Playstyle groupTeamForGame(int teamid) throws Exception {
+		String query = "SELECT Id,Position FROM players WHERE TeamId = '" + teamid + "'";
+		List<Integer> teamListR = new ArrayList<>();
+		int df = 0;
+		int md = 0;
+		int fw = 0;
+		Playstyle pl = new Playstyle();
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		while (rs.next()) {
+			switch (rs.getInt("Position")) {
+			case 0:
+				teamListR.add(rs.getInt("Id"));
+				break;
+			case 1:
+				pl.setGk(getPlayerById(rs.getInt("Id")));
+				break;
+			case 2:
+				pl.setDf1(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 3:
+				pl.setDf2(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 4:
+				pl.setDf3(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 5:
+				pl.setDf4(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 6:
+				pl.setDf5(getPlayerById(rs.getInt("Id")));
+				df++;
+				break;
+			case 7:
+				pl.setMd1(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 8:
+				pl.setMd2(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 9:
+				pl.setMd3(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 10:
+				pl.setMd4(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 11:
+				pl.setMd5(getPlayerById(rs.getInt("Id")));
+				md++;
+				break;
+			case 12:
+				pl.setFw1(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 13:
+				pl.setFw2(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 14:
+				pl.setFw3(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 15:
+				pl.setFw4(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+			case 16:
+				pl.setFw5(getPlayerById(rs.getInt("Id")));
+				fw++;
+				break;
+
+			}
+
+			// teamList.add(rs.getInt("Id"));
+		}
+		pl.setR1(getPlayerById(teamListR.get(0)));
+		pl.setR2(getPlayerById(teamListR.get(1)));
+		pl.setR3(getPlayerById(teamListR.get(2)));
+		pl.setR4(getPlayerById(teamListR.get(3)));
+		pl.setR5(getPlayerById(teamListR.get(4)));
+		pl.setR6(getPlayerById(teamListR.get(5)));
+		pl.setR7(getPlayerById(teamListR.get(6)));
+		pl.setDf(df);
+		pl.setMd(md);
+		pl.setFw(fw);
+		conn.close();
+		return pl;
+	}
+	
+	/*
+	 * тестов метод за мач
+	 */
+	@Path("/playgame")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String playGame() throws Exception {
+		Status status = new Status();
+		String query="";
+		query = "SELECT * FROM status";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		if(rs.next()){
+			status.setCreatePlayers(rs.getInt(0));
+			status.setDistributePlayers(rs.getInt(1));
+			status.setCreateProgram(rs.getInt(2));
+			status.setRound(rs.getInt(3));
+		}
+		
+		int i=0;
+		query = "SELECT * FROM game WHERE GameRound = '"+status.getRound()+"'";
+		
+		Statement st2 = conn.createStatement();
+		ResultSet rs2 = st2.executeQuery(query);
+		while(rs.next()){
+			Game game = new Game();
+			game.setTeamA(groupTeamForGame(rs2.getInt(0)));// id na otbora
+		}
+		
+		
+		return "bfsbsfb";
+	}
+	
 	/*
 	 * тестов метод ================
 	 */

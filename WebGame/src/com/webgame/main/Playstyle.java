@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Playstyle {
+	private String Name;
 	private Player gk;
 	private Player df1;
 	private Player df2;
@@ -30,6 +31,47 @@ public class Playstyle {
 	private int df;
 	private int md;
 	private int fw;
+	private Integer attack, defence, speed, technic, condition;
+
+	public Integer getAttack() {
+		return attack;
+	}
+
+
+	public void setAttack(Integer attack) {
+		this.attack = attack;
+	}
+
+
+	public Integer getDefence() {
+		return defence;
+	}
+
+
+	public void setDefence(Integer defence) {
+		this.defence = defence;
+	}
+
+
+	public Integer getSpeed() {
+		return speed;
+	}
+
+
+	public void setSpeed(Integer speed) {
+		this.speed = speed;
+	}
+
+
+	public Integer getTechnic() {
+		return technic;
+	}
+
+
+	public void setTechnic(Integer technic) {
+		this.technic = technic;
+	}
+
 
 	public Playstyle(){
 		
@@ -294,6 +336,26 @@ public class Playstyle {
 
 	public void setFw(int fw) {
 		this.fw = fw;
+	}
+
+
+	public String getName() {
+		return Name;
+	}
+
+
+	public void setName(String name) {
+		Name = name;
+	}
+
+
+	public Integer getCondition() {
+		return condition;
+	}
+
+
+	public void setCondition(Integer condition) {
+		this.condition = condition;
 	}
 	
 	

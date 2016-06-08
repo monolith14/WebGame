@@ -4,7 +4,7 @@ public class Game {
 	private Playstyle teamA, teamB;
 	private Integer totalAttack, goalAttack, goalA, goalB, attackPriority, machType, minute, teamACond, teamBCond; 
 	
-	
+
 	public Game(){
 		
 	}

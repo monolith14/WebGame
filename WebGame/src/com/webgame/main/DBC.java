@@ -937,7 +937,7 @@ public class DBC {
 			for(i=0;i<s1.length;i++){
 				s2 = s1[i].split(":");
 				result += s1[i]+"</br>";
-				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[0]+"','"+s2[1]+"')";
+				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[0].trim()+"','"+s2[1].trim()+"')";
 				PreparedStatement st2 = conn.prepareStatement(query);
 				st2.execute();
 			}
@@ -951,7 +951,7 @@ public class DBC {
 			for(i=0;i<s1.length;i++){
 				s2 = s1[i].split(":");
 				result += s1[i]+"</br>";
-				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[1]+"','"+s2[0]+"')";
+				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[1].trim()+"','"+s2[0].trim()+"')";
 				PreparedStatement st3 = conn.prepareStatement(query);
 				st3.execute();
 			}
@@ -969,11 +969,12 @@ public class DBC {
 	 */
 	
 	public Playstyle groupTeamForGame(int teamid) throws Exception {
-		String query = "SELECT Id,Position FROM players WHERE TeamId = '" + teamid + "'";
+		String query = "SELECT * FROM players WHERE TeamId = '" + teamid + "'";
 		List<Integer> teamListR = new ArrayList<>();
 		int df = 0;
 		int md = 0;
 		int fw = 0;
+		Integer attack=0, defence=0, speed=0, technic=0, condition = 0;
 		Playstyle pl = new Playstyle();
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
@@ -986,66 +987,146 @@ public class DBC {
 				break;
 			case 1:
 				pl.setGk(getPlayerById(rs.getInt("Id")));
+				attack += pl.getGk().getS1();
+				defence += pl.getGk().getS2();
+				speed += pl.getGk().getS3();
+				technic += pl.getGk().getS4();
+				condition += pl.getGk().getCondition();
 				break;
 			case 2:
 				pl.setDf1(getPlayerById(rs.getInt("Id")));
 				df++;
+				attack += pl.getDf1().getS1();
+				defence += pl.getDf1().getS2();
+				speed += pl.getDf1().getS3();
+				technic += pl.getDf1().getS4();
+				condition += pl.getDf1().getCondition();
 				break;
 			case 3:
 				pl.setDf2(getPlayerById(rs.getInt("Id")));
 				df++;
+				attack += pl.getDf2().getS1();
+				defence += pl.getDf2().getS2();
+				speed += pl.getDf2().getS3();
+				technic += pl.getDf2().getS4();
+				condition += pl.getDf2().getCondition();
 				break;
 			case 4:
 				pl.setDf3(getPlayerById(rs.getInt("Id")));
 				df++;
+				attack += pl.getDf3().getS1();
+				defence += pl.getDf3().getS2();
+				speed += pl.getDf3().getS3();
+				technic += pl.getDf3().getS4();
+				condition += pl.getDf3().getCondition();
 				break;
 			case 5:
 				pl.setDf4(getPlayerById(rs.getInt("Id")));
 				df++;
+				attack += pl.getDf4().getS1();
+				defence += pl.getDf4().getS2();
+				speed += pl.getDf4().getS3();
+				technic += pl.getDf4().getS4();
+				condition += pl.getDf4().getCondition();
 				break;
 			case 6:
 				pl.setDf5(getPlayerById(rs.getInt("Id")));
 				df++;
+				attack += pl.getDf5().getS1();
+				defence += pl.getDf5().getS2();
+				speed += pl.getDf5().getS3();
+				technic += pl.getDf5().getS4();
+				condition += pl.getDf5().getCondition();
 				break;
 			case 7:
 				pl.setMd1(getPlayerById(rs.getInt("Id")));
 				md++;
+				attack += pl.getMd1().getS1();
+				defence += pl.getMd1().getS2();
+				speed += pl.getMd1().getS3();
+				technic += pl.getMd1().getS4();
+				condition += pl.getMd1().getCondition();
 				break;
 			case 8:
 				pl.setMd2(getPlayerById(rs.getInt("Id")));
 				md++;
+				attack += pl.getMd2().getS1();
+				defence += pl.getMd2().getS2();
+				speed += pl.getMd2().getS3();
+				technic += pl.getMd2().getS4();
+				condition += pl.getMd2().getCondition();
 				break;
 			case 9:
 				pl.setMd3(getPlayerById(rs.getInt("Id")));
 				md++;
+				attack += pl.getMd3().getS1();
+				defence += pl.getMd3().getS2();
+				speed += pl.getMd3().getS3();
+				technic += pl.getMd3().getS4();
+				condition += pl.getMd3().getCondition();
 				break;
 			case 10:
 				pl.setMd4(getPlayerById(rs.getInt("Id")));
 				md++;
+				attack += pl.getMd4().getS1();
+				defence += pl.getMd4().getS2();
+				speed += pl.getMd4().getS3();
+				technic += pl.getMd4().getS4();
+				condition += pl.getMd4().getCondition();
 				break;
 			case 11:
 				pl.setMd5(getPlayerById(rs.getInt("Id")));
 				md++;
+				attack += pl.getMd5().getS1();
+				defence += pl.getMd5().getS2();
+				speed += pl.getMd5().getS3();
+				technic += pl.getMd5().getS4();
+				condition += pl.getMd5().getCondition();
 				break;
 			case 12:
 				pl.setFw1(getPlayerById(rs.getInt("Id")));
 				fw++;
+				attack += pl.getFw1().getS1();
+				defence += pl.getFw1().getS2();
+				speed += pl.getFw1().getS3();
+				technic += pl.getFw1().getS4();
+				condition += pl.getFw1().getCondition();
 				break;
 			case 13:
 				pl.setFw2(getPlayerById(rs.getInt("Id")));
 				fw++;
+				attack += pl.getFw2().getS1();
+				defence += pl.getFw2().getS2();
+				speed += pl.getFw2().getS3();
+				technic += pl.getFw2().getS4();
+				condition += pl.getFw2().getCondition();
 				break;
 			case 14:
 				pl.setFw3(getPlayerById(rs.getInt("Id")));
 				fw++;
+				attack += pl.getFw3().getS1();
+				defence += pl.getFw3().getS2();
+				speed += pl.getFw3().getS3();
+				technic += pl.getFw3().getS4();
+				condition += pl.getFw3().getCondition();
 				break;
 			case 15:
 				pl.setFw4(getPlayerById(rs.getInt("Id")));
 				fw++;
+				attack += pl.getFw4().getS1();
+				defence += pl.getFw4().getS2();
+				speed += pl.getFw4().getS3();
+				technic += pl.getFw4().getS4();
+				condition += pl.getFw4().getCondition();
 				break;
 			case 16:
 				pl.setFw5(getPlayerById(rs.getInt("Id")));
 				fw++;
+				attack += pl.getFw5().getS1();
+				defence += pl.getFw5().getS2();
+				speed += pl.getFw5().getS3();
+				technic += pl.getFw5().getS4();
+				condition += pl.getFw5().getCondition();
 				break;
 
 			}
@@ -1062,6 +1143,17 @@ public class DBC {
 		pl.setDf(df);
 		pl.setMd(md);
 		pl.setFw(fw);
+		query = "SELECT Name FROM team WHERE Id = '"+teamid+"'";
+		st = conn.createStatement();
+		rs = st.executeQuery(query);
+		if(rs.next()){
+			pl.setName(rs.getString("Name"));
+		}
+		pl.setAttack(attack);
+		pl.setDefence(defence);
+		pl.setSpeed(speed);
+		pl.setTechnic(technic);
+		pl.setCondition(condition);
 		conn.close();
 		return pl;
 	}
@@ -1074,31 +1166,38 @@ public class DBC {
 	@Produces(MediaType.TEXT_HTML)
 	public String playGame() throws Exception {
 		Status status = new Status();
-		String query="";
-		query = "SELECT * FROM status";
+		String query="",result="";
+		Integer tVal1, tVal2;
+		Game game = new Game();
+		query = "SELECT CurrentRound FROM status";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st2,st3;
+		ResultSet rs2,rs3;
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		if(rs.next()){
-			status.setCreatePlayers(rs.getInt(0));
-			status.setDistributePlayers(rs.getInt(1));
-			status.setCreateProgram(rs.getInt(2));
-			status.setRound(rs.getInt(3));
+			status.setRound(rs.getInt(1));
 		}
 		
-		int i=0;
-		query = "SELECT * FROM game WHERE GameRound = '"+status.getRound()+"'";
-		
-		Statement st2 = conn.createStatement();
-		ResultSet rs2 = st2.executeQuery(query);
+		query = "SELECT * FROM game WHERE GameRound = '"+status.getRound()+"'";	
+		st = conn.createStatement();
+		rs = st.executeQuery(query);
 		while(rs.next()){
-			Game game = new Game();
-			game.setTeamA(groupTeamForGame(rs2.getInt(0)));// id na otbora
+			query = "SELECT * FROM team WHERE Name ='"+rs.getString("Team1")+"'";
+			st2 = conn.createStatement();
+			rs2 = st2.executeQuery(query);
+			if(rs2.next()){
+				game.setTeamA(groupTeamForGame(rs2.getInt("Id")));// id na otbora
+				result += "att - "+game.getTeamA().getAttack()+" def - "+game.getTeamA().getDefence()+" speed - "+game.getTeamA().getSpeed()+" tech - "+game.getTeamA().getTechnic()+"</br>";
+				
+			}
+			
+			
 		}
 		
 		
-		return "bfsbsfb";
+		return result;
 	}
 	
 	/*

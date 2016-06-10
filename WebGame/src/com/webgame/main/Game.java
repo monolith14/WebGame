@@ -113,6 +113,7 @@ public class Game {
 	public void setTeamBCond(Integer teamBCond) {
 		this.teamBCond = teamBCond;
 	}
+
 	
 
 }

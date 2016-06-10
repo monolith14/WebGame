@@ -868,9 +868,9 @@ public class DBC {
 	}
 
 	/*
-	 * генериране на програма по система всеки-срещу-всеки
-	 * с разменено гостуване, стартира се еднократно при започване на сезона
-	 * заявка: http://localhost:8080/WebGame/db/createrounds
+	 * генериране на програма по система всеки-срещу-всеки с разменено
+	 * гостуване, стартира се еднократно при започване на сезона заявка:
+	 * http://localhost:8080/WebGame/db/createrounds
 	 */
 	@Path("/createrounds")
 	@GET
@@ -879,7 +879,7 @@ public class DBC {
 		String result = "", query = "SELECT * FROM team";
 		String[] s1, s2;
 		String tVal = null;
-		int i = 0, j = 0,kr = 1;
+		int i = 0, j = 0, kr = 1;
 		List<String> allPairList = new ArrayList<String>();
 		List<String> roundsList = new ArrayList<String>();
 		List<String> singleRoundList = new ArrayList<String>();
@@ -900,81 +900,80 @@ public class DBC {
 			}
 
 		}
-		
-		while(!allPairList.isEmpty()){
+
+		while (!allPairList.isEmpty()) {
 			singleRoundList.add(allPairList.get(0));
-				for(String elm:allPairList){
-					s1=elm.split(":");
-					for(String elm2:singleRoundList){
-						s2 = elm2.split(":");
-						if(s1[0].equals(s2[0])||s1[1].equals(s2[1])||s1[0].equals(s2[1])||s1[1].equals(s2[0])){
-							tVal="";
-							break;
-						}
-						else{
-							tVal=elm;
-						}
-						
+			for (String elm : allPairList) {
+				s1 = elm.split(":");
+				for (String elm2 : singleRoundList) {
+					s2 = elm2.split(":");
+					if (s1[0].equals(s2[0]) || s1[1].equals(s2[1]) || s1[0].equals(s2[1]) || s1[1].equals(s2[0])) {
+						tVal = "";
+						break;
+					} else {
+						tVal = elm;
 					}
-					if(!tVal.equals("")){
+
+				}
+				if (!tVal.equals("")) {
 					singleRoundList.add(tVal);
-					}
+				}
 			}
-			for(String elmnt:singleRoundList){
+			for (String elmnt : singleRoundList) {
 				allPairList.remove(elmnt);
 			}
 			roundsList.add(singleRoundList.toString());
 			singleRoundList.clear();
-			
+
 		}
 		Collections.shuffle(roundsList);
-		
-		for(String lst:roundsList){
-			result+="============== Кръг "+kr+" =====================</br>";
-			lst=lst.replace("[", "");
-			lst=lst.replace("]", "");
-			s1=lst.split(",");
-			for(i=0;i<s1.length;i++){
+
+		for (String lst : roundsList) {
+			result += "============== Кръг " + kr + " =====================</br>";
+			lst = lst.replace("[", "");
+			lst = lst.replace("]", "");
+			s1 = lst.split(",");
+			for (i = 0; i < s1.length; i++) {
 				s2 = s1[i].split(":");
-				result += s1[i]+"</br>";
-				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[0].trim()+"','"+s2[1].trim()+"')";
+				result += s1[i] + "</br>";
+				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('" + kr + "','" + s2[0].trim() + "','"
+						+ s2[1].trim() + "')";
 				PreparedStatement st2 = conn.prepareStatement(query);
 				st2.execute();
 			}
 			kr++;
 		}
-		for(String lst:roundsList){
-			result+="============== Кръг "+kr+" =====================</br>";
-			lst=lst.replace("[", "");
-			lst=lst.replace("]", "");
-			s1=lst.split(",");
-			for(i=0;i<s1.length;i++){
+		for (String lst : roundsList) {
+			result += "============== Кръг " + kr + " =====================</br>";
+			lst = lst.replace("[", "");
+			lst = lst.replace("]", "");
+			s1 = lst.split(",");
+			for (i = 0; i < s1.length; i++) {
 				s2 = s1[i].split(":");
-				result += s1[i]+"</br>";
-				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('"+kr+"','"+s2[1].trim()+"','"+s2[0].trim()+"')";
+				result += s1[i] + "</br>";
+				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('" + kr + "','" + s2[1].trim() + "','"
+						+ s2[0].trim() + "')";
 				PreparedStatement st3 = conn.prepareStatement(query);
 				st3.execute();
 			}
 			kr++;
 		}
-		
+
 		conn.close();
 		return result;
 	}
-	
-	
-	
+
 	/*
 	 * 
 	 */
-	
+
 	public Playstyle groupTeamForGame(int teamid) throws Exception {
 		String query = "SELECT * FROM players WHERE TeamId = '" + teamid + "'";
 		List<Integer> teamListR = new ArrayList<>();
 		int df = 0;
 		int md = 0;
 		int fw = 0;
-		Integer attack=0, defence=0, speed=0, technic=0, condition = 0;
+		Integer attack = 0, defence = 0, speed = 0, technic = 0, condition = 0;
 		Playstyle pl = new Playstyle();
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
@@ -1143,10 +1142,10 @@ public class DBC {
 		pl.setDf(df);
 		pl.setMd(md);
 		pl.setFw(fw);
-		query = "SELECT Name FROM team WHERE Id = '"+teamid+"'";
+		query = "SELECT Name FROM team WHERE Id = '" + teamid + "'";
 		st = conn.createStatement();
 		rs = st.executeQuery(query);
-		if(rs.next()){
+		if (rs.next()) {
 			pl.setName(rs.getString("Name"));
 		}
 		pl.setAttack(attack);
@@ -1157,7 +1156,7 @@ public class DBC {
 		conn.close();
 		return pl;
 	}
-	
+
 	/*
 	 * тестов метод за мач
 	 */
@@ -1165,41 +1164,325 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String playGame() throws Exception {
+		Random r = new Random();
 		Status status = new Status();
-		String query="",result="";
-		Integer tVal1, tVal2;
+		String query = "", result = "";
+		Integer tVal1, tVal2, attDirection, ballPosition, flang, tVal3, tVal4, tVal5, tVal6, gA = 0, gB = 0, a = 0,
+				b = 0;
+		Integer checker;
 		Game game = new Game();
 		query = "SELECT CurrentRound FROM status";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
-		Statement st2,st3;
-		ResultSet rs2,rs3;
+		Statement st2;
+		PreparedStatement st3;
+		ResultSet rs2, rs3;
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
-		if(rs.next()){
+		if (rs.next()) {
 			status.setRound(rs.getInt(1));
 		}
-		
-		query = "SELECT * FROM game WHERE GameRound = '"+status.getRound()+"'";	
+
+		query = "SELECT * FROM game WHERE GameRound = '" + status.getRound() + "'";
 		st = conn.createStatement();
 		rs = st.executeQuery(query);
-		while(rs.next()){
-			query = "SELECT * FROM team WHERE Name ='"+rs.getString("Team1")+"'";
+		while (rs.next()) {
+			tVal1 = 0;
+			tVal2 = 0;
+			attDirection = 0;
+			checker = 0;
+			ballPosition = 0;
+			flang = 0;
+			tVal3 = 0;
+			tVal4 = 0;
+			tVal5 = 0;
+			tVal6 = 0;
+			gA = 0;
+			gB = 0;
+			query = "SELECT * FROM team WHERE Name ='" + rs.getString("Team1") + "'";
 			st2 = conn.createStatement();
 			rs2 = st2.executeQuery(query);
-			if(rs2.next()){
-				game.setTeamA(groupTeamForGame(rs2.getInt("Id")));// id na otbora
-				result += "att - "+game.getTeamA().getAttack()+" def - "+game.getTeamA().getDefence()+" speed - "+game.getTeamA().getSpeed()+" tech - "+game.getTeamA().getTechnic()+"</br>";
-				
+			if (rs2.next()) {
+				game.setTeamA(groupTeamForGame(rs2.getInt("Id")));// id na
+																	// otbora
+			}
+			query = "SELECT * FROM team WHERE Name ='" + rs.getString("Team2") + "'";
+			st2 = conn.createStatement();
+			rs2 = st2.executeQuery(query);
+			if (rs2.next()) {
+				game.setTeamB(groupTeamForGame(rs2.getInt("Id")));// id na
+																	// otbora
+			}
+
+			// общ коефициент на отбора/сбор от 4 показатели на всички играчи
+			tVal1 = game.getTeamA().getAttack() + game.getTeamA().getDefence() + game.getTeamA().getSpeed()
+					+ game.getTeamA().getTechnic();
+			tVal2 = game.getTeamB().getAttack() + game.getTeamB().getDefence() + game.getTeamB().getSpeed()
+					+ game.getTeamB().getTechnic();
+
+			ballPosition = 2;
+			flang = 2;
+			attDirection = r.nextInt(2) + 1;
+			for (int i = 0; i < 90; i++) {
+				switch (attDirection) {
+				case 1:
+					switch (ballPosition) {
+					case 1:
+						checker = dfVsFw(game.getTeamA(), game.getTeamB());
+						if (checker > 50) {
+							ballPosition = 2;
+							attDirection = 1;
+						} else {
+							ballPosition = 1;
+							attDirection = 2;
+						}
+						break;
+					case 2:
+						checker = mdfVsMd(game.getTeamA(), game.getTeamB());
+						if (checker > 50) {
+							ballPosition = 3;
+							attDirection = 1;
+						} else {
+							ballPosition = 2;
+							attDirection = 2;
+						}
+						break;
+					case 3:
+						checker = dfVsFw(game.getTeamA(), game.getTeamB());
+						if (checker < 50) {
+							ballPosition = 3;
+							if (r.nextInt(100) > 90) {
+								gA++;
+							}
+							attDirection = 2;
+						}
+						break;
+					}// krai na switch ballPosition
+					break;
+				case 2:
+					switch (ballPosition) {
+					case 1:
+						checker = dfVsFw(game.getTeamB(), game.getTeamA());
+						if (checker < 50) {
+							ballPosition = 1;
+							if (r.nextInt(100) > 90) {
+								gB++;
+							}
+							attDirection = 1;
+						}
+						break;
+					case 2:
+						checker = mdfVsMd(game.getTeamB(), game.getTeamA());
+						if (checker < 50) {
+							ballPosition = 1;
+							attDirection = 2;
+						} else {
+							ballPosition = 2;
+							attDirection = 1;
+						}
+						break;
+					case 3:
+						checker = dfVsFw(game.getTeamB(), game.getTeamA());
+						if (checker < 50) {
+							ballPosition = 2;
+							attDirection = 2;
+						} else {
+							ballPosition = 3;
+							attDirection = 1;
+
+						}
+						break;
+					}
+
+					break;
+				}// krai na attdirection
+			} // krai na cikyl 180
+			result += game.getTeamA().getName() + " " + gA.toString() + " : " + gB.toString() + " "
+					+ game.getTeamB().getName() + "</br>";
+			// ъпдейт на резултата в таблица
+			query = "UPDATE game SET Results = '" + gA.toString() + ":" + gB.toString() + "'WHERE Team1 ='"
+					+ game.getTeamA().getName() + "' AND Team2 = '" + game.getTeamB().getName() + "'";
+			st3 = conn.prepareStatement(query);
+			st3.execute();
+			// update na team za klasiraneto
+			if (gA > gB) {
+				query = "SELECT * FROM team WHERE Name = '" + game.getTeamA().getName() + "'";
+				st2 = conn.createStatement();
+				rs2 = st2.executeQuery(query);
+				if (rs2.next()) {
+					tVal1 = rs2.getInt("Played") + 1;
+					tVal2 = rs2.getInt("Wons") + 1;
+					tVal3 = rs2.getInt("Points") + 3;
+					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Wons = '" + tVal2.toString()
+							+ "', Points = '" + tVal3.toString() + "' WHERE Name = '" + game.getTeamA().getName() + "'";
+					st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+				query = "SELECT * FROM team WHERE Name = '" + game.getTeamB().getName() + "'";
+				st2 = conn.createStatement();
+				rs2 = st2.executeQuery(query);
+				if (rs2.next()) {
+					tVal1 = rs2.getInt("Played") + 1;
+					tVal2 = rs2.getInt("Loss") + 1;
+					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Loss = '" + tVal2.toString()
+							+ "' WHERE Name = '" + game.getTeamB().getName() + "'";
+					st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+
+			}
+			if (gA < gB) {
+				query = "SELECT * FROM team WHERE Name = '" + game.getTeamB().getName() + "'";
+				st2 = conn.createStatement();
+				rs2 = st2.executeQuery(query);
+				if (rs2.next()) {
+					tVal1 = rs2.getInt("Played") + 1;
+					tVal2 = rs2.getInt("Wons") + 1;
+					tVal3 = rs2.getInt("Points") + 3;
+					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Wons = '" + tVal2.toString()
+							+ "', Points = '" + tVal3.toString() + "' WHERE Name = '" + game.getTeamB().getName() + "'";
+					st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+				query = "SELECT * FROM team WHERE Name = '" + game.getTeamA().getName() + "'";
+				st2 = conn.createStatement();
+				rs2 = st2.executeQuery(query);
+				if (rs2.next()) {
+					tVal1 = rs2.getInt("Played") + 1;
+					tVal2 = rs2.getInt("Loss") + 1;
+					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Loss = '" + tVal2.toString()
+							+ "' WHERE Name = '" + game.getTeamA().getName() + "'";
+					st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+
+			}
+			if (gA.equals(gB)) {
+				query = "SELECT * FROM team WHERE Name = '" + game.getTeamB().getName() + "'";
+				st2 = conn.createStatement();
+				rs2 = st2.executeQuery(query);
+				if (rs2.next()) {
+					tVal1 = rs2.getInt("Played") + 1;
+					tVal2 = rs2.getInt("Drws") + 1;
+					tVal3 = rs2.getInt("Points") + 1;
+					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Drws = '" + tVal2.toString()
+							+ "', Points = '" + tVal3.toString() + "' WHERE Name = '" + game.getTeamB().getName() + "'";
+					st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+				query = "SELECT * FROM team WHERE Name = '" + game.getTeamA().getName() + "'";
+				st2 = conn.createStatement();
+				rs2 = st2.executeQuery(query);
+				if (rs2.next()) {
+					tVal1 = rs2.getInt("Played") + 1;
+					tVal2 = rs2.getInt("Drws") + 1;
+					tVal3 = rs2.getInt("Points") + 1;
+					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Drws = '" + tVal2.toString()
+					+ "', Points = '" + tVal3.toString() + "' WHERE Name = '" + game.getTeamA().getName() + "'";
+					st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+
 			}
 			
-			
+
 		}
-		
-		
+		tVal1 = status.getRound() + 1;
+		query = "UPDATE status SET CurrentRound = '" + tVal1.toString() + "'";
+		st3 = conn.prepareStatement(query);
+		st3.execute();
+
 		return result;
 	}
-	
+
+	private int dfVsFw(Playstyle plA, Playstyle plB) {
+		Integer tVal1, tVal2, tVal3, tVal4;
+		Double d;
+		Random r = new Random();
+		tVal1 = 1;
+		tVal2 = 1;
+		tVal3 = 1;
+		tVal4 = 1;
+		if (plA.getDf1() != null) {
+			tVal1 = +plA.getDf1().getS2() + plA.getDf1().getS3();
+		}
+		if (plA.getDf2() != null) {
+			tVal1 = +plA.getDf2().getS2() + plA.getDf2().getS3();
+		}
+		if (plA.getDf3() != null) {
+			tVal1 = +plA.getDf3().getS2() + plA.getDf3().getS3();
+		}
+		if (plA.getDf4() != null) {
+			tVal1 = +plA.getDf4().getS2() + plA.getDf4().getS3();
+		}
+		if (plA.getDf5() != null) {
+			tVal1 = +plA.getDf5().getS2() + plA.getDf5().getS3();
+		}
+		if (plB.getFw1() != null) {
+			tVal2 = +plB.getFw1().getS1() + plB.getFw1().getS3();
+		}
+		if (plB.getFw2() != null) {
+			tVal2 = +plB.getFw2().getS1() + plB.getFw2().getS3();
+		}
+		if (plB.getFw3() != null) {
+			tVal2 = +plB.getFw3().getS1() + plB.getFw3().getS3();
+		}
+		if (plB.getFw4() != null) {
+			tVal2 = +plB.getFw4().getS1() + plB.getFw4().getS3();
+		}
+		if (plB.getFw5() != null) {
+			tVal2 = +plB.getFw5().getS1() + plB.getFw5().getS3();
+		}
+		d = tVal1 / (double) tVal2;
+		return r.nextInt((int) Math.ceil(d * 100));
+
+	}
+
+	private int mdfVsMd(Playstyle plA, Playstyle plB) {
+		Integer tVal1, tVal2, tVal3, tVal4;
+		Double d;
+		Random r = new Random();
+		tVal1 = 1;
+		tVal2 = 1;
+		tVal3 = 1;
+		tVal4 = 1;
+		if (plA.getMd1() != null) {
+			tVal1 = +plA.getMd1().getS1() + plA.getMd1().getS3() + plA.getMd1().getS4();
+		}
+		if (plA.getMd2() != null) {
+			tVal1 = +plA.getMd2().getS1() + plA.getMd2().getS3() + plA.getMd2().getS4();
+		}
+		if (plA.getMd3() != null) {
+			tVal1 = +plA.getMd3().getS1() + plA.getMd3().getS3() + plA.getMd3().getS4();
+		}
+
+		if (plA.getMd4() != null) {
+			tVal1 = +plA.getMd4().getS1() + plA.getMd4().getS3() + plA.getMd4().getS4();
+		}
+		if (plA.getMd5() != null) {
+			tVal1 = +plA.getMd5().getS1() + plA.getMd5().getS3() + plA.getMd5().getS4();
+		}
+
+		if (plB.getMd1() != null) {
+			tVal2 = +plB.getMd1().getS1() + plB.getMd1().getS3() + plB.getMd1().getS4();
+		}
+		if (plB.getMd2() != null) {
+			tVal2 = +plB.getMd2().getS1() + plB.getMd2().getS3() + plB.getMd2().getS4();
+		}
+		if (plB.getMd3() != null) {
+			tVal2 = +plB.getMd3().getS1() + plB.getMd3().getS3() + plB.getMd3().getS4();
+		}
+		if (plB.getMd4() != null) {
+			tVal2 = +plB.getMd4().getS1() + plB.getMd4().getS3() + plB.getMd4().getS4();
+		}
+		if (plB.getMd5() != null) {
+			tVal2 = +plB.getMd5().getS1() + plB.getMd5().getS3() + plB.getMd5().getS4();
+		}
+
+		d = tVal1 / (double) tVal2;
+		return r.nextInt((int) Math.ceil(d * 100));
+	}
+
 	/*
 	 * тестов метод ================
 	 */

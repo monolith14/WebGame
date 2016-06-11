@@ -92,6 +92,25 @@ public class DBC {
 		}
 		return false;
 	}
+	
+	/*
+	 * проверка на потребител за администраторски права
+	 */
+	private Boolean checkAdmin(String username) throws Exception {
+		String query = "SELECT Status FROM login WHERE Username ='" + username + "'";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+
+		if (rs.next()) {
+			String t1 = rs.getString("Status");
+			if (t1.equals(1)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/*
 	 * update на токен при login валидно само за класа с 2 подадени параметъра
@@ -875,7 +894,7 @@ public class DBC {
 	@Path("/createrounds")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String createrounds() throws Exception {
+	public String createRounds() throws Exception {
 		String result = "", query = "SELECT * FROM team";
 		String[] s1, s2;
 		String tVal = null;

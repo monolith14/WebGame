@@ -27,7 +27,7 @@ public class DBC {
 	private String driver = "com.mysql.jdbc.Driver";
 	private static String url = "jdbc:mysql://localhost/webgame?useUnicode=true&characterEncoding=utf-8";
 	private static String dbusername = "root";
-	private static String dbpassword = "";
+	private static String dbpassword = "123";
 
 	/*
 	 * проверка за съществуващо потребителско име и парола в зависимост от това
@@ -934,7 +934,6 @@ public class DBC {
 		}
 
 		if (!done) {
-
 			query = "SELECT * FROM team";
 			st = conn.createStatement();
 			rs = st.executeQuery(query);

@@ -92,7 +92,7 @@ public class DBC {
 		}
 		return false;
 	}
-	
+
 	/*
 	 * проверка на потребител за администраторски права
 	 */
@@ -631,7 +631,7 @@ public class DBC {
 			st.execute();
 		}
 		conn.close();
-		return "JOB DONE!";
+		return "<h4>Генерирани са " + qty + " нови играчи в базата!</h4>";
 
 	}
 
@@ -644,11 +644,14 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String distributePlayers() throws Exception {
+		String query = "SELECT * FROM status";
+
 		// заявка за извеждане на Id на отборите
 		String query1 = "SELECT Id FROM Team";
 		String query2;
 		String condPos = null;
 		String returnlist = null;
+		boolean done = false;
 		int teamId, playerId, tempNum;
 		// списък с Id на отборите
 		List<Integer> teamList = new ArrayList<Integer>();
@@ -657,93 +660,108 @@ public class DBC {
 		List<Integer> tempList = new ArrayList<Integer>();
 		// лист със номерата на играчите
 		List<Integer> tempNumbersList = new ArrayList<>();
-
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
-		PreparedStatement st2 = null;
-		ResultSet rs = st.executeQuery(query1);
-		// извеждане на Id на отборите в лист
-		while (rs.next()) {
-			teamList.add(rs.getInt("Id"));
+		ResultSet rs = st.executeQuery(query);
+		if (rs.next()) {
+			if (rs.getInt("DistributePlayers") == 1) {
+				done = true;
+				returnlist = "<h3>Играчите вече са разпределени по отбори!</h3>";
+			}
 		}
-		returnlist += teamList.toString();
-		// разбъркване на елементите на листа за по-изравнен шанс
-		Collections.shuffle(teamList);
-		// за всеки елемент(отбор) в листа избираме произволни играчи и ги
-		// вкарваме в темп лист, след което ъпдейтваме всички с Id на отбора
-		for (int i = 0; i < teamList.size(); i++) {
-			// задаване на номерата от 2 до 42
-			for (int ii = 2; ii < 42; ii++) {
-				tempNumbersList.add(ii);
-			}
-			// разбъркване на листа
-			Collections.shuffle(tempNumbersList);
-			// ако първият елемент е < 18 и >28 добавяме 1 на 2-ра позиция в
-			// листа за да се назначи номер на вратаря
-			if (tempNumbersList.get(0) < 18 || tempNumbersList.get(0) > 28) {
-				tempNumbersList.add(1, 1);
-			}
-			// заявка за произволни 2 играч на позиция вратар
-			query2 = "SELECT Id FROM players WHERE PrimePosition = '1' AND TeamId = '0' ORDER BY RAND() LIMIT 2";
-			rs = st.executeQuery(query2);
+		if (!done) {
+			st = conn.createStatement();
+			rs = st.executeQuery(query1);
+			PreparedStatement st2 = null;
+			// извеждане на Id на отборите в лист
 			while (rs.next()) {
-				tempList.add(rs.getInt("Id"));
+				teamList.add(rs.getInt("Id"));
 			}
-			// заявка за произволни 5 играча за защитник
-			query2 = "SELECT Id FROM players WHERE PrimePosition = '2' AND TeamId = '0' ORDER BY RAND() LIMIT 5";
-			rs = st.executeQuery(query2);
-			while (rs.next()) {
-				tempList.add(rs.getInt("Id"));
-			}
-			// заявка за произволни 7 играча за център
-			query2 = "SELECT Id FROM players WHERE PrimePosition = '3' AND TeamId = '0' ORDER BY RAND() LIMIT 7";
-			rs = st.executeQuery(query2);
-			while (rs.next()) {
-				tempList.add(rs.getInt("Id"));
-			}
-			// заявка за произволни 4 играча за нападател
-			query2 = "SELECT Id FROM players WHERE PrimePosition = '4' AND TeamId = '0' ORDER BY RAND() LIMIT 4";
-			rs = st.executeQuery(query2);
-			while (rs.next()) {
-				tempList.add(rs.getInt("Id"));
-			}
-
-			returnlist += "</br>otbor " + (i + 1) + "-" + tempList.toString();
-			teamId = teamList.get(i);
-			// ъпдейт на играчите с Id на отбора, като се назначават и номерата
-			// от временния лист и позиции, като първоначалната схема е 4-4-2
-			for (int j = 0; j < tempList.size(); j++) {
-				playerId = tempList.get(j);
-				if (j == 4 || j == 9 || j > 11) {
-					switch (j) {
-					case 4:
-					case 9:
-					case 12:
-					case 13:
-					case 14:
-					case 17:
-						condPos = "0";
-						break;
-					case 15:
-						condPos = "13";
-						break;
-					case 16:
-						condPos = "15";
-						break;
-					}
-				} else {
-					condPos = Integer.toString(j);
+			returnlist += teamList.toString();
+			// разбъркване на елементите на листа за по-изравнен шанс
+			Collections.shuffle(teamList);
+			// за всеки елемент(отбор) в листа избираме произволни играчи и ги
+			// вкарваме в темп лист, след което ъпдейтваме всички с Id на отбора
+			for (int i = 0; i < teamList.size(); i++) {
+				// задаване на номерата от 2 до 42
+				for (int ii = 2; ii < 42; ii++) {
+					tempNumbersList.add(ii);
 				}
-				tempNum = tempNumbersList.get(j);
-				query2 = "UPDATE players SET TeamId = '" + teamId + "',Position ='" + condPos + "', PlayNumber ='"
-						+ tempNum + "' WHERE Id='" + playerId + "'";
-				st2 = conn.prepareStatement(query2);
-				st2.execute();
+				// разбъркване на листа
+				Collections.shuffle(tempNumbersList);
+				// ако първият елемент е < 18 и >28 добавяме 1 на 2-ра позиция в
+				// листа за да се назначи номер на вратаря
+				if (tempNumbersList.get(0) < 18 || tempNumbersList.get(0) > 28) {
+					tempNumbersList.add(1, 1);
+				}
+				// заявка за произволни 2 играч на позиция вратар
+				query2 = "SELECT Id FROM players WHERE PrimePosition = '1' AND TeamId = '0' ORDER BY RAND() LIMIT 2";
+				rs = st.executeQuery(query2);
+				while (rs.next()) {
+					tempList.add(rs.getInt("Id"));
+				}
+				// заявка за произволни 5 играча за защитник
+				query2 = "SELECT Id FROM players WHERE PrimePosition = '2' AND TeamId = '0' ORDER BY RAND() LIMIT 5";
+				rs = st.executeQuery(query2);
+				while (rs.next()) {
+					tempList.add(rs.getInt("Id"));
+				}
+				// заявка за произволни 7 играча за център
+				query2 = "SELECT Id FROM players WHERE PrimePosition = '3' AND TeamId = '0' ORDER BY RAND() LIMIT 7";
+				rs = st.executeQuery(query2);
+				while (rs.next()) {
+					tempList.add(rs.getInt("Id"));
+				}
+				// заявка за произволни 4 играча за нападател
+				query2 = "SELECT Id FROM players WHERE PrimePosition = '4' AND TeamId = '0' ORDER BY RAND() LIMIT 4";
+				rs = st.executeQuery(query2);
+				while (rs.next()) {
+					tempList.add(rs.getInt("Id"));
+				}
+
+				returnlist += "</br>otbor " + (i + 1) + "-" + tempList.toString();
+				teamId = teamList.get(i);
+				// ъпдейт на играчите с Id на отбора, като се назначават и
+				// номерата
+				// от временния лист и позиции, като първоначалната схема е
+				// 4-4-2
+				for (int j = 0; j < tempList.size(); j++) {
+					playerId = tempList.get(j);
+					if (j == 4 || j == 9 || j > 11) {
+						switch (j) {
+						case 4:
+						case 9:
+						case 12:
+						case 13:
+						case 14:
+						case 17:
+							condPos = "0";
+							break;
+						case 15:
+							condPos = "13";
+							break;
+						case 16:
+							condPos = "15";
+							break;
+						}
+					} else {
+						condPos = Integer.toString(j);
+					}
+					tempNum = tempNumbersList.get(j);
+					query2 = "UPDATE players SET TeamId = '" + teamId + "',Position ='" + condPos + "', PlayNumber ='"
+							+ tempNum + "' WHERE Id='" + playerId + "'";
+					st2 = conn.prepareStatement(query2);
+					st2.execute();
+				}
+				tempList.clear();
 			}
-			tempList.clear();
+			query = "UPDATE status SET DistributePlayers = '1'";
+			PreparedStatement st4 = conn.prepareStatement(query);
+			st4.execute();
+			conn.close();
 		}
-		conn.close();
+
 		return returnlist;
 	}
 
@@ -895,10 +913,11 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String createRounds() throws Exception {
-		String result = "", query = "SELECT * FROM team";
+		String result = "", query = "SELECT * FROM status";
 		String[] s1, s2;
 		String tVal = null;
 		int i = 0, j = 0, kr = 1;
+		boolean done = false;
 		List<String> allPairList = new ArrayList<String>();
 		List<String> roundsList = new ArrayList<String>();
 		List<String> singleRoundList = new ArrayList<String>();
@@ -907,78 +926,94 @@ public class DBC {
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
-		while (rs.next()) {
-			tList.add(rs.getString("Name"));
+		if (rs.next()) {
+			if (rs.getInt("CreateProgram") == 1) {
+				done = true;
+				result = "<h3>Програмата на отборите вече е създадена!</h3>";
+			}
 		}
 
-		for (i = 0; i < tList.size(); i++) {
-			for (j = i; j < tList.size(); j++) {
-				if (i != j) {
-					allPairList.add(tList.get(i) + ":" + tList.get(j));
-				}
+		if (!done) {
+
+			query = "SELECT * FROM team";
+			st = conn.createStatement();
+			rs = st.executeQuery(query);
+			while (rs.next()) {
+				tList.add(rs.getString("Name"));
 			}
 
-		}
-
-		while (!allPairList.isEmpty()) {
-			singleRoundList.add(allPairList.get(0));
-			for (String elm : allPairList) {
-				s1 = elm.split(":");
-				for (String elm2 : singleRoundList) {
-					s2 = elm2.split(":");
-					if (s1[0].equals(s2[0]) || s1[1].equals(s2[1]) || s1[0].equals(s2[1]) || s1[1].equals(s2[0])) {
-						tVal = "";
-						break;
-					} else {
-						tVal = elm;
+			for (i = 0; i < tList.size(); i++) {
+				for (j = i; j < tList.size(); j++) {
+					if (i != j) {
+						allPairList.add(tList.get(i) + ":" + tList.get(j));
 					}
-
 				}
-				if (!tVal.equals("")) {
-					singleRoundList.add(tVal);
+
+			}
+
+			while (!allPairList.isEmpty()) {
+				singleRoundList.add(allPairList.get(0));
+				for (String elm : allPairList) {
+					s1 = elm.split(":");
+					for (String elm2 : singleRoundList) {
+						s2 = elm2.split(":");
+						if (s1[0].equals(s2[0]) || s1[1].equals(s2[1]) || s1[0].equals(s2[1]) || s1[1].equals(s2[0])) {
+							tVal = "";
+							break;
+						} else {
+							tVal = elm;
+						}
+
+					}
+					if (!tVal.equals("")) {
+						singleRoundList.add(tVal);
+					}
 				}
-			}
-			for (String elmnt : singleRoundList) {
-				allPairList.remove(elmnt);
-			}
-			roundsList.add(singleRoundList.toString());
-			singleRoundList.clear();
+				for (String elmnt : singleRoundList) {
+					allPairList.remove(elmnt);
+				}
+				roundsList.add(singleRoundList.toString());
+				singleRoundList.clear();
 
-		}
-		Collections.shuffle(roundsList);
-
-		for (String lst : roundsList) {
-			result += "============== Кръг " + kr + " =====================</br>";
-			lst = lst.replace("[", "");
-			lst = lst.replace("]", "");
-			s1 = lst.split(",");
-			for (i = 0; i < s1.length; i++) {
-				s2 = s1[i].split(":");
-				result += s1[i] + "</br>";
-				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('" + kr + "','" + s2[0].trim() + "','"
-						+ s2[1].trim() + "')";
-				PreparedStatement st2 = conn.prepareStatement(query);
-				st2.execute();
 			}
-			kr++;
-		}
-		for (String lst : roundsList) {
-			result += "============== Кръг " + kr + " =====================</br>";
-			lst = lst.replace("[", "");
-			lst = lst.replace("]", "");
-			s1 = lst.split(",");
-			for (i = 0; i < s1.length; i++) {
-				s2 = s1[i].split(":");
-				result += s1[i] + "</br>";
-				query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('" + kr + "','" + s2[1].trim() + "','"
-						+ s2[0].trim() + "')";
-				PreparedStatement st3 = conn.prepareStatement(query);
-				st3.execute();
-			}
-			kr++;
-		}
+			Collections.shuffle(roundsList);
 
-		conn.close();
+			for (String lst : roundsList) {
+				result += "============== Кръг " + kr + " =====================</br>";
+				lst = lst.replace("[", "");
+				lst = lst.replace("]", "");
+				s1 = lst.split(",");
+				for (i = 0; i < s1.length; i++) {
+					s2 = s1[i].split(":");
+					result += s1[i] + "</br>";
+					query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('" + kr + "','" + s2[0].trim() + "','"
+							+ s2[1].trim() + "')";
+					PreparedStatement st2 = conn.prepareStatement(query);
+					st2.execute();
+				}
+				kr++;
+			}
+			for (String lst : roundsList) {
+				result += "============== Кръг " + kr + " =====================</br>";
+				lst = lst.replace("[", "");
+				lst = lst.replace("]", "");
+				s1 = lst.split(",");
+				for (i = 0; i < s1.length; i++) {
+					s2 = s1[i].split(":");
+					result += s1[i] + "</br>";
+					query = "INSERT INTO game (GameRound,Team1,Team2) VALUES ('" + kr + "','" + s2[1].trim() + "','"
+							+ s2[0].trim() + "')";
+					PreparedStatement st3 = conn.prepareStatement(query);
+					st3.execute();
+				}
+				kr++;
+			}
+
+			query = "UPDATE status SET CreateProgram = '1'";
+			PreparedStatement st4 = conn.prepareStatement(query);
+			st4.execute();
+			conn.close();
+		}
 		return result;
 	}
 
@@ -1201,7 +1236,7 @@ public class DBC {
 		if (rs.next()) {
 			status.setRound(rs.getInt(1));
 		}
-
+		result +="<h3>Резултати за "+status.getRound().toString()+" кръг</h3></br>";
 		query = "SELECT * FROM game WHERE GameRound = '" + status.getRound() + "'";
 		st = conn.createStatement();
 		rs = st.executeQuery(query);
@@ -1397,13 +1432,12 @@ public class DBC {
 					tVal2 = rs2.getInt("Drws") + 1;
 					tVal3 = rs2.getInt("Points") + 1;
 					query = "UPDATE team SET Played = '" + tVal1.toString() + "', Drws = '" + tVal2.toString()
-					+ "', Points = '" + tVal3.toString() + "' WHERE Name = '" + game.getTeamA().getName() + "'";
+							+ "', Points = '" + tVal3.toString() + "' WHERE Name = '" + game.getTeamA().getName() + "'";
 					st3 = conn.prepareStatement(query);
 					st3.execute();
 				}
 
 			}
-			
 
 		}
 		tVal1 = status.getRound() + 1;

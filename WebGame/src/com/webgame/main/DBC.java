@@ -27,7 +27,7 @@ public class DBC {
 	private String driver = "com.mysql.jdbc.Driver";
 	private static String url = "jdbc:mysql://localhost/webgame?useUnicode=true&characterEncoding=utf-8";
 	private static String dbusername = "root";
-	private static String dbpassword = "123";
+	private static String dbpassword = "";
 
 	/*
 	 * проверка за съществуващо потребителско име и парола в зависимост от това
@@ -1534,6 +1534,63 @@ public class DBC {
 
 		d = tVal1 / (double) tVal2;
 		return r.nextInt((int) Math.ceil(d * 100));
+	}
+	
+	/*
+	 * връща резултатите на отбора на потребителя, заявка -
+	 * http://localhost:8080/WebGame/db/getmyresults?team=Спартак
+	 */
+	@Path("/getmyresults")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String getMyResults(@QueryParam("team") String team) throws Exception {
+		String result = "<h3>Резултати от изиграните срещи:</h3></br>",checkResult="",tVal="";
+		String query = "SELECT * FROM game WHERE Team1 = '" + team + "' OR Team2 = '" + team + "'";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		while(rs.next()) {
+			checkResult = rs.getString("Results");
+			if(checkResult.equals("0")){
+				tVal = "-:-";
+			}
+			else{
+				tVal = checkResult;
+			}
+			result += rs.getString("Team1")+" "+tVal+" "+rs.getString("Team2")+"</br>";
+			
+		}
+		return result;
+	}
+	
+	
+	/*
+	 * връща резултатите на отбора на за определен кръг, заявка -
+	 * http://localhost:8080/WebGame/db/getallresults?round=1
+	 */
+	@Path("/getallresults")
+	@GET
+	@Produces(MediaType.TEXT_HTML)
+	public String getAllResults(@QueryParam("round") String round) throws Exception {
+		String result = "<h3>Резултати от изиграните срещи за "+round+" кръг:</h3></br>",checkResult="",tVal="";
+		String query = "SELECT * FROM game WHERE GameRound = '" + round+"'";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		while(rs.next()) {
+			checkResult = rs.getString("Results");
+			if(checkResult.equals("0")){
+				tVal = "-:-";
+			}
+			else{
+				tVal = checkResult;
+			}
+			result += rs.getString("Team1")+" "+tVal+" "+rs.getString("Team2")+"</br>";
+			
+		}
+		return result;
 	}
 
 	/*

@@ -913,14 +913,15 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String createRounds() throws Exception {
-		String result = "", query = "SELECT * FROM status";
-		String[] s1, s2;
+		String result = "", query = "SELECT * FROM status", reverse = "";
+		String[] s1, s2, s3,s4;
 		String tVal = null;
-		int i = 0, j = 0, kr = 1;
+		int i = 0, j = 0, kr = 1, l = 0;
 		boolean done = false;
 		List<String> allPairList = new ArrayList<String>();
 		List<String> roundsList = new ArrayList<String>();
 		List<String> singleRoundList = new ArrayList<String>();
+		List<String> roundListShuffle = new ArrayList<String>();
 		List<String> tList = new ArrayList<String>();// za otborite ot bazata
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
@@ -952,6 +953,7 @@ public class DBC {
 
 			while (!allPairList.isEmpty()) {
 				singleRoundList.add(allPairList.get(0));
+				
 				for (String elm : allPairList) {
 					s1 = elm.split(":");
 					for (String elm2 : singleRoundList) {
@@ -971,13 +973,34 @@ public class DBC {
 				for (String elmnt : singleRoundList) {
 					allPairList.remove(elmnt);
 				}
+
 				roundsList.add(singleRoundList.toString());
 				singleRoundList.clear();
 
 			}
 			Collections.shuffle(roundsList);
+			for(String sfl:roundsList){
+				sfl = sfl.replace("[", "");
+				sfl = sfl.replace("]", "");
+				if(l==1){
+					s3 = sfl.split(",");
+					for(i=0;i<s3.length;i++){
+						s4 = s3[i].split(":");
+						reverse = s4[1]+":"+s4[0];
+						singleRoundList.add(reverse);
+					}
+					roundListShuffle.add(singleRoundList.toString());
+					singleRoundList.clear();
+					l--;
+				}
+				else{
+					roundListShuffle.add(sfl);
+					l++;
+				}
+			}
+			Collections.shuffle(roundListShuffle);
 
-			for (String lst : roundsList) {
+			for (String lst : roundListShuffle) {
 				result += "============== Кръг " + kr + " =====================</br>";
 				lst = lst.replace("[", "");
 				lst = lst.replace("]", "");
@@ -992,7 +1015,7 @@ public class DBC {
 				}
 				kr++;
 			}
-			for (String lst : roundsList) {
+			for (String lst : roundListShuffle) {
 				result += "============== Кръг " + kr + " =====================</br>";
 				lst = lst.replace("[", "");
 				lst = lst.replace("]", "");
@@ -1235,7 +1258,7 @@ public class DBC {
 		if (rs.next()) {
 			status.setRound(rs.getInt(1));
 		}
-		result +="<h3>Резултати за "+status.getRound().toString()+" кръг</h3></br>";
+		result += "<h3>Резултати за " + status.getRound().toString() + " кръг</h3></br>";
 		query = "SELECT * FROM game WHERE GameRound = '" + status.getRound() + "'";
 		st = conn.createStatement();
 		rs = st.executeQuery(query);
@@ -1534,7 +1557,7 @@ public class DBC {
 		d = tVal1 / (double) tVal2;
 		return r.nextInt((int) Math.ceil(d * 100));
 	}
-	
+
 	/*
 	 * връща резултатите на отбора на потребителя, заявка -
 	 * http://localhost:8080/WebGame/db/getmyresults?team=Спартак
@@ -1543,27 +1566,25 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String getMyResults(@QueryParam("team") String team) throws Exception {
-		String result = "<h3>Резултати от изиграните срещи:</h3></br>",checkResult="",tVal="";
+		String result = "<h3>Резултати от изиграните срещи:</h3></br>", checkResult = "", tVal = "";
 		String query = "SELECT * FROM game WHERE Team1 = '" + team + "' OR Team2 = '" + team + "'";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
-		while(rs.next()) {
+		while (rs.next()) {
 			checkResult = rs.getString("Results");
-			if(checkResult.equals("0")){
+			if (checkResult.equals("0")) {
 				tVal = "-:-";
-			}
-			else{
+			} else {
 				tVal = checkResult;
 			}
-			result += rs.getString("Team1")+" "+tVal+" "+rs.getString("Team2")+"</br>";
-			
+			result += rs.getString("Team1") + " " + tVal + " " + rs.getString("Team2") + "</br>";
+
 		}
 		return result;
 	}
-	
-	
+
 	/*
 	 * връща резултатите на отбора на за определен кръг, заявка -
 	 * http://localhost:8080/WebGame/db/getallresults?round=1
@@ -1572,22 +1593,22 @@ public class DBC {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String getAllResults(@QueryParam("round") String round) throws Exception {
-		String result = "<h3>Резултати от изиграните срещи за "+round+" кръг:</h3></br>",checkResult="",tVal="";
-		String query = "SELECT * FROM game WHERE GameRound = '" + round+"'";
+		String result = "<h3>Резултати от изиграните срещи за " + round + " кръг:</h3></br>", checkResult = "",
+				tVal = "";
+		String query = "SELECT * FROM game WHERE GameRound = '" + round + "'";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(query);
-		while(rs.next()) {
+		while (rs.next()) {
 			checkResult = rs.getString("Results");
-			if(checkResult.equals("0")){
+			if (checkResult.equals("0")) {
 				tVal = "-:-";
-			}
-			else{
+			} else {
 				tVal = checkResult;
 			}
-			result += rs.getString("Team1")+" "+tVal+" "+rs.getString("Team2")+"</br>";
-			
+			result += rs.getString("Team1") + " " + tVal + " " + rs.getString("Team2") + "</br>";
+
 		}
 		return result;
 	}

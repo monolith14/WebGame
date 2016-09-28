@@ -13,8 +13,7 @@ public class Game {
 	private Random r = new Random();
 
 	public Game() {
-		startGame(teamA, teamB);
-
+		
 	}
 
 	public Playstyle getTeamA() {
@@ -115,7 +114,7 @@ public class Game {
 					pass(ballPosition);
 					break;
 				case 1:
-					?????????
+					
 				}
 			}
 

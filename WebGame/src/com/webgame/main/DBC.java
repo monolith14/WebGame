@@ -914,7 +914,7 @@ public class DBC {
 	@Produces(MediaType.TEXT_HTML)
 	public String createRounds() throws Exception {
 		String result = "", query = "SELECT * FROM status", reverse = "";
-		String[] s1, s2, s3,s4;
+		String[] s1, s2, s3, s4;
 		String tVal = null;
 		int i = 0, j = 0, kr = 1, l = 0;
 		boolean done = false;
@@ -953,7 +953,7 @@ public class DBC {
 
 			while (!allPairList.isEmpty()) {
 				singleRoundList.add(allPairList.get(0));
-				
+
 				for (String elm : allPairList) {
 					s1 = elm.split(":");
 					for (String elm2 : singleRoundList) {
@@ -979,21 +979,20 @@ public class DBC {
 
 			}
 			Collections.shuffle(roundsList);
-			for(String sfl:roundsList){
+			for (String sfl : roundsList) {
 				sfl = sfl.replace("[", "");
 				sfl = sfl.replace("]", "");
-				if(l==1){
+				if (l == 1) {
 					s3 = sfl.split(",");
-					for(i=0;i<s3.length;i++){
+					for (i = 0; i < s3.length; i++) {
 						s4 = s3[i].split(":");
-						reverse = s4[1]+":"+s4[0];
+						reverse = s4[1] + ":" + s4[0];
 						singleRoundList.add(reverse);
 					}
 					roundListShuffle.add(singleRoundList.toString());
 					singleRoundList.clear();
 					l--;
-				}
-				else{
+				} else {
 					roundListShuffle.add(sfl);
 					l++;
 				}
@@ -1242,7 +1241,7 @@ public class DBC {
 	public String playGame() throws Exception {
 		Random r = new Random();
 		Status status = new Status();
-		String query = "", result = "";
+		String query = "", result = "", comment="";
 		Integer tVal1, tVal2, attDirection, ballPosition, flang, tVal3, tVal4, tVal5, tVal6, gA = 0, gB = 0, a = 0,
 				b = 0;
 		Integer checker;
@@ -1263,6 +1262,7 @@ public class DBC {
 		st = conn.createStatement();
 		rs = st.executeQuery(query);
 		while (rs.next()) {
+			comment = "";
 			tVal1 = 0;
 			tVal2 = 0;
 			attDirection = 0;
@@ -1299,7 +1299,7 @@ public class DBC {
 			ballPosition = 2;
 			flang = 2;
 			attDirection = r.nextInt(2) + 1;
-			for (int i = 0; i < 90; i++) {
+			for (Integer i = 0; i < 90; i++) {
 				switch (attDirection) {
 				case 1:
 					switch (ballPosition) {
@@ -1308,9 +1308,11 @@ public class DBC {
 						if (checker > 50) {
 							ballPosition = 2;
 							attDirection = 1;
+							comment+= "t1"+i.toString()+":"+ getComment(game.getTeamA().getGk().getName(), 1, 1)+"|";
 						} else {
 							ballPosition = 1;
 							attDirection = 2;
+							comment+= "t2"+i.toString()+":"+ getComment(game.getTeamA().getGk().getName(), 1, 2)+"|";
 						}
 						break;
 					case 2:
@@ -1376,7 +1378,7 @@ public class DBC {
 			result += game.getTeamA().getName() + " " + gA.toString() + " : " + gB.toString() + " "
 					+ game.getTeamB().getName() + "</br>";
 			// ъпдейт на резултата в таблица
-			query = "UPDATE game SET Results = '" + gA.toString() + ":" + gB.toString() + "'WHERE Team1 ='"
+			query = "UPDATE game SET Results = '" + gA.toString() + ":" + gB.toString() + "', Comment = '"+comment+"' WHERE Team1 ='"
 					+ game.getTeamA().getName() + "' AND Team2 = '" + game.getTeamB().getName() + "'";
 			st3 = conn.prepareStatement(query);
 			st3.execute();
@@ -1466,6 +1468,22 @@ public class DBC {
 		query = "UPDATE status SET CurrentRound = '" + tVal1.toString() + "'";
 		st3 = conn.prepareStatement(query);
 		st3.execute();
+
+		return result;
+	}
+
+	private String getComment(String playerName, int event, int type) throws Exception {
+		String result = "";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
+		String query = "SELECT Message FROM commentator WHERE Event = '" + event + "' AND Type = '" + type
+				+ "' ORDER BY RAND() LIMIT 1";
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		if (rs.next()) {
+			result = rs.getString(1).replaceAll("Player", playerName);
+		}
+		conn.close();
 
 		return result;
 	}
@@ -1618,12 +1636,12 @@ public class DBC {
 	 */
 	@Path("/test")
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Playstyle test() {
+	@Produces(MediaType.TEXT_HTML)
+	public String test() {
 		Player pl = new Player(1, "Novo ime ooD");
 		Playstyle plstl = new Playstyle();
 		plstl.setGk(pl);
 		plstl.setDf1(pl);
-		return plstl;
+		return "{1:Удар към вратата,2:Опасна атака}";
 	}
 }

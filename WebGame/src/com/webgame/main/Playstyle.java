@@ -1,5 +1,7 @@
 package com.webgame.main;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -32,6 +34,38 @@ public class Playstyle {
 	private int md;
 	private int fw;
 	private Integer attack, defence, speed, technic, condition;
+	private ArrayList<String> dfList,mdList,fwList;
+	
+	
+	public ArrayList<String> getDfList() {
+		return dfList;
+	}
+
+
+	public void setDfList(ArrayList<String> dfList) {
+		this.dfList = dfList;
+	}
+
+
+	public ArrayList<String> getMdList() {
+		return mdList;
+	}
+
+
+	public void setMdList(ArrayList<String> mdList) {
+		this.mdList = mdList;
+	}
+
+
+	public ArrayList<String> getFwList() {
+		return fwList;
+	}
+
+
+	public void setFwList(ArrayList<String> fwList) {
+		this.fwList = fwList;
+	}
+
 
 	public Integer getAttack() {
 		return attack;

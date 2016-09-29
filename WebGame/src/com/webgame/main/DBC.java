@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -17,6 +18,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
+import org.eclipse.persistence.descriptors.changetracking.AttributeChangeTrackingPolicy;
 
 //път за URL за достъп до уеб сървиса  http://localhost:8080/webgame/db/...
 //за всеки метод се добавя нова стойност с @Path(/mymethod) и се достъпва чрез  http://localhost:8080/webgame/db/mymethod/
@@ -1048,6 +1051,9 @@ public class DBC {
 		int df = 0;
 		int md = 0;
 		int fw = 0;
+		ArrayList<String> dfList = new ArrayList<String>();
+		ArrayList<String> mdList = new ArrayList<String>();
+		ArrayList<String> fwList = new ArrayList<String>();
 		Integer attack = 0, defence = 0, speed = 0, technic = 0, condition = 0;
 		Playstyle pl = new Playstyle();
 		Class.forName(driver);
@@ -1075,6 +1081,7 @@ public class DBC {
 				speed += pl.getDf1().getS3();
 				technic += pl.getDf1().getS4();
 				condition += pl.getDf1().getCondition();
+				dfList.add("df1");
 				break;
 			case 3:
 				pl.setDf2(getPlayerById(rs.getInt("Id")));
@@ -1084,6 +1091,7 @@ public class DBC {
 				speed += pl.getDf2().getS3();
 				technic += pl.getDf2().getS4();
 				condition += pl.getDf2().getCondition();
+				dfList.add("df2");
 				break;
 			case 4:
 				pl.setDf3(getPlayerById(rs.getInt("Id")));
@@ -1093,6 +1101,7 @@ public class DBC {
 				speed += pl.getDf3().getS3();
 				technic += pl.getDf3().getS4();
 				condition += pl.getDf3().getCondition();
+				dfList.add("df3");
 				break;
 			case 5:
 				pl.setDf4(getPlayerById(rs.getInt("Id")));
@@ -1102,6 +1111,7 @@ public class DBC {
 				speed += pl.getDf4().getS3();
 				technic += pl.getDf4().getS4();
 				condition += pl.getDf4().getCondition();
+				dfList.add("df4");
 				break;
 			case 6:
 				pl.setDf5(getPlayerById(rs.getInt("Id")));
@@ -1111,6 +1121,7 @@ public class DBC {
 				speed += pl.getDf5().getS3();
 				technic += pl.getDf5().getS4();
 				condition += pl.getDf5().getCondition();
+				dfList.add("df5");
 				break;
 			case 7:
 				pl.setMd1(getPlayerById(rs.getInt("Id")));
@@ -1120,6 +1131,7 @@ public class DBC {
 				speed += pl.getMd1().getS3();
 				technic += pl.getMd1().getS4();
 				condition += pl.getMd1().getCondition();
+				mdList.add("md1");
 				break;
 			case 8:
 				pl.setMd2(getPlayerById(rs.getInt("Id")));
@@ -1129,6 +1141,7 @@ public class DBC {
 				speed += pl.getMd2().getS3();
 				technic += pl.getMd2().getS4();
 				condition += pl.getMd2().getCondition();
+				mdList.add("md2");
 				break;
 			case 9:
 				pl.setMd3(getPlayerById(rs.getInt("Id")));
@@ -1138,6 +1151,7 @@ public class DBC {
 				speed += pl.getMd3().getS3();
 				technic += pl.getMd3().getS4();
 				condition += pl.getMd3().getCondition();
+				mdList.add("md3");
 				break;
 			case 10:
 				pl.setMd4(getPlayerById(rs.getInt("Id")));
@@ -1147,6 +1161,7 @@ public class DBC {
 				speed += pl.getMd4().getS3();
 				technic += pl.getMd4().getS4();
 				condition += pl.getMd4().getCondition();
+				mdList.add("md4");
 				break;
 			case 11:
 				pl.setMd5(getPlayerById(rs.getInt("Id")));
@@ -1156,6 +1171,7 @@ public class DBC {
 				speed += pl.getMd5().getS3();
 				technic += pl.getMd5().getS4();
 				condition += pl.getMd5().getCondition();
+				mdList.add("md5");
 				break;
 			case 12:
 				pl.setFw1(getPlayerById(rs.getInt("Id")));
@@ -1165,6 +1181,7 @@ public class DBC {
 				speed += pl.getFw1().getS3();
 				technic += pl.getFw1().getS4();
 				condition += pl.getFw1().getCondition();
+				fwList.add("fw1");
 				break;
 			case 13:
 				pl.setFw2(getPlayerById(rs.getInt("Id")));
@@ -1174,6 +1191,7 @@ public class DBC {
 				speed += pl.getFw2().getS3();
 				technic += pl.getFw2().getS4();
 				condition += pl.getFw2().getCondition();
+				fwList.add("fw2");
 				break;
 			case 14:
 				pl.setFw3(getPlayerById(rs.getInt("Id")));
@@ -1183,6 +1201,7 @@ public class DBC {
 				speed += pl.getFw3().getS3();
 				technic += pl.getFw3().getS4();
 				condition += pl.getFw3().getCondition();
+				fwList.add("fw3");
 				break;
 			case 15:
 				pl.setFw4(getPlayerById(rs.getInt("Id")));
@@ -1192,6 +1211,7 @@ public class DBC {
 				speed += pl.getFw4().getS3();
 				technic += pl.getFw4().getS4();
 				condition += pl.getFw4().getCondition();
+				fwList.add("fw4");
 				break;
 			case 16:
 				pl.setFw5(getPlayerById(rs.getInt("Id")));
@@ -1201,6 +1221,7 @@ public class DBC {
 				speed += pl.getFw5().getS3();
 				technic += pl.getFw5().getS4();
 				condition += pl.getFw5().getCondition();
+				fwList.add("fw5");
 				break;
 
 			}
@@ -1217,6 +1238,9 @@ public class DBC {
 		pl.setDf(df);
 		pl.setMd(md);
 		pl.setFw(fw);
+		pl.setDfList(dfList);
+		pl.setMdList(mdList);
+		pl.setFwList(fwList);
 		query = "SELECT Name FROM team WHERE Id = '" + teamid + "'";
 		st = conn.createStatement();
 		rs = st.executeQuery(query);
@@ -1242,8 +1266,12 @@ public class DBC {
 		Random r = new Random();
 		Status status = new Status();
 		String query = "", result = "", comment="";
-		Integer tVal1, tVal2, attDirection, ballPosition, flang, tVal3, tVal4, tVal5, tVal6, gA = 0, gB = 0, a = 0,
+		Integer tVal1, tVal2, attackDirection, ballPosition, flang, tVal3, tVal4, tVal5, tVal6, gA = 0, gB = 0, a = 0,
 				b = 0;
+		ArrayList<Integer> passOk = new ArrayList(Arrays.asList(11,51,11,121,31,11,51,11,31,11,11,31,11,121));
+		ArrayList<Integer> passFail = new ArrayList(Arrays.asList(12,12,41,12,41,12,41,41,41,12,41,121));
+		ArrayList<Integer> goal = new ArrayList(Arrays.asList(21));
+		ArrayList<Integer> goalFail = new ArrayList(Arrays.asList(22));
 		Integer checker;
 		Game game = new Game();
 		query = "SELECT CurrentRound FROM status";
@@ -1265,7 +1293,7 @@ public class DBC {
 			comment = "";
 			tVal1 = 0;
 			tVal2 = 0;
-			attDirection = 0;
+			attackDirection = 0;
 			checker = 0;
 			ballPosition = 0;
 			flang = 0;
@@ -1298,31 +1326,33 @@ public class DBC {
 
 			ballPosition = 2;
 			flang = 2;
-			attDirection = r.nextInt(2) + 1;
+			attackDirection = r.nextInt(2) + 1;
 			for (Integer i = 0; i < 90; i++) {
-				switch (attDirection) {
+				switch (attackDirection) {
 				case 1:
 					switch (ballPosition) {
 					case 1:
 						checker = dfVsFw(game.getTeamA(), game.getTeamB());
 						if (checker > 50) {
 							ballPosition = 2;
-							attDirection = 1;
-							comment+= "t1"+i.toString()+":"+ getComment(game.getTeamA().getGk().getName(), 1, 1)+"|";
+							attackDirection = 1;
+							comment+= "t1+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passOk.get(r.nextInt(passOk.size())) )+"|";
 						} else {
 							ballPosition = 1;
-							attDirection = 2;
-							comment+= "t2"+i.toString()+":"+ getComment(game.getTeamA().getGk().getName(), 1, 2)+"|";
+							attackDirection = 2;
+							comment+= "t1+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passFail.get(r.nextInt(passFail.size())) )+"|";
 						}
 						break;
 					case 2:
 						checker = mdfVsMd(game.getTeamA(), game.getTeamB());
 						if (checker > 50) {
 							ballPosition = 3;
-							attDirection = 1;
+							attackDirection = 1;
+							comment+= "t1+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passOk.get(r.nextInt(passOk.size())) )+"|";
 						} else {
 							ballPosition = 2;
-							attDirection = 2;
+							attackDirection = 2;
+							comment+= "t1+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passFail.get(r.nextInt(passFail.size())) )+"|";
 						}
 						break;
 					case 3:
@@ -1331,8 +1361,12 @@ public class DBC {
 							ballPosition = 3;
 							if (r.nextInt(100) > 90) {
 								gA++;
+								comment+= "t1+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,goal.get(r.nextInt(goal.size())) )+"|";
 							}
-							attDirection = 2;
+							else{
+								comment+= "t1+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,goalFail.get(r.nextInt(goalFail.size())) )+"|";
+							}
+							attackDirection = 2;
 						}
 						break;
 					}// krai na switch ballPosition
@@ -1345,28 +1379,36 @@ public class DBC {
 							ballPosition = 1;
 							if (r.nextInt(100) > 90) {
 								gB++;
+								comment+= "t2+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,goal.get(r.nextInt(goal.size())) )+"|";
 							}
-							attDirection = 1;
+							else{
+								comment+= "t2+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,goalFail.get(r.nextInt(goalFail.size())) )+"|";
+							}
+							attackDirection = 1;
 						}
 						break;
 					case 2:
 						checker = mdfVsMd(game.getTeamB(), game.getTeamA());
 						if (checker < 50) {
 							ballPosition = 1;
-							attDirection = 2;
+							attackDirection = 2;
+							comment+= "t2+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passOk.get(r.nextInt(passOk.size())) )+"|";
 						} else {
 							ballPosition = 2;
-							attDirection = 1;
+							attackDirection = 1;
+							comment+= "t2+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passFail.get(r.nextInt(passFail.size())) )+"|";
 						}
 						break;
 					case 3:
 						checker = dfVsFw(game.getTeamB(), game.getTeamA());
 						if (checker < 50) {
 							ballPosition = 2;
-							attDirection = 2;
+							attackDirection = 2;
+							comment+= "t2+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passOk.get(r.nextInt(passOk.size())) )+"|";
 						} else {
 							ballPosition = 3;
-							attDirection = 1;
+							attackDirection = 1;
+							comment+= "t2+"+i.toString()+":"+ eventMaker(game, attackDirection, ballPosition,passFail.get(r.nextInt(passFail.size())) )+"|";
 
 						}
 						break;
@@ -1472,7 +1514,7 @@ public class DBC {
 		return result;
 	}
 
-	private String getComment(String playerName, int event, int type) throws Exception {
+	private String getComment(String playerName,String teamName, int event, int type) throws Exception {
 		String result = "";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbusername, dbpassword);
@@ -1482,9 +1524,220 @@ public class DBC {
 		ResultSet rs = st.executeQuery(query);
 		if (rs.next()) {
 			result = rs.getString(1).replaceAll("Player", playerName);
+			result = result.replaceAll("Team", teamName);
 		}
 		conn.close();
 
+		return result;
+	}
+	
+	/*Събитие, отговарящо по номер както следва:
+		1-подаване
+		2-удар към вратата->(гол, аут, корнер)
+			21-гол
+			22 аут
+		3-дрибъл
+		 31- тръгва напред -> пас към ...
+		 32 - спрян  
+		4-пресчен пас от
+		5-нарушение
+		6-дузпа
+		7-тъч
+		8-корнер
+		9-жълт картон
+		10-червен картон
+		11-смяна
+		12-случайна реплика на коментатора*/
+
+	private String eventMaker(Game game, int attackDirection, int ballPosition, int eventType) throws Exception{
+		String result = "";
+		String teamName;
+		if(attackDirection == 1){
+			teamName = game.getTeamA().getName();
+		}
+		else{
+			teamName = game.getTeamB().getName();
+		}
+		switch(eventType){
+		case 11:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 1, 1);
+			break;
+		case 12:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 1, 2);
+			break;
+		case 21:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 2, 1);
+			break;
+		case 22:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 2, 2);
+			break;
+		case 31:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 3, 1);
+			break;
+		case 32:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 3, 2);
+			break;
+		case 51:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 5, 1);
+			break;
+		case 41:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 4, 1);
+			break;
+		case 121:
+			result = getComment(getPlayerNameForComment(game, attackDirection,ballPosition),teamName, 12, 1);
+			break;
+		}
+		
+		return result;
+	}
+	
+	
+	private String getPlayerNameForComment(Game game,int attackDirection, int ballPosition){
+		String result = "";
+		int tempInt;
+		Random r = new Random();
+		switch(attackDirection){
+		case 1:
+			switch(ballPosition){
+			case 0:
+				result = game.getTeamA().getGk().getName();
+				break;
+			case 1:
+				tempInt = r.nextInt(game.getTeamA().getDfList().size());
+				switch(game.getTeamA().getDfList().get(tempInt)){
+				case "df1":
+					result = game.getTeamA().getDf1().getName();
+					break;
+				case "df2":
+					result = game.getTeamA().getDf2().getName();
+					break;
+				case "df3":
+					result = game.getTeamA().getDf3().getName();
+					break;
+				case "df4":
+					result = game.getTeamA().getDf4().getName();
+					break;
+				case "df5":
+					result = game.getTeamA().getDf5().getName();
+					break;
+				}
+				break;
+			case 2:
+				tempInt = r.nextInt(game.getTeamA().getMdList().size());
+				switch(game.getTeamA().getMdList().get(tempInt)){
+				case "md1":
+					result = game.getTeamA().getMd1().getName();
+					break;
+				case "md2":
+					result = game.getTeamA().getMd2().getName();
+					break;
+				case "md3":
+					result = game.getTeamA().getMd3().getName();
+					break;
+				case "md4":
+					result = game.getTeamA().getMd4().getName();
+					break;
+				case "md5":
+					result = game.getTeamA().getMd5().getName();
+					break;
+				}
+				break;
+			case 3:
+				tempInt = r.nextInt(game.getTeamA().getFwList().size());
+				switch(game.getTeamA().getFwList().get(tempInt)){
+				case "fw1":
+					result = game.getTeamA().getFw1().getName();
+					break;
+				case "fw2":
+					result = game.getTeamA().getFw2().getName();
+					break;
+				case "fw3":
+					result = game.getTeamA().getFw3().getName();
+					break;
+				case "fw4":
+					result = game.getTeamA().getFw4().getName();
+					break;
+				case "fw5":
+					result = game.getTeamA().getFw5().getName();
+					break;
+				}
+				break;
+			}
+			//krai na line
+			break;
+			
+			
+			//teamB
+		case 2:
+			switch(ballPosition){
+			case 0:
+				result = game.getTeamB().getGk().getName();
+				break;
+			case 1:
+				tempInt = r.nextInt(game.getTeamB().getDfList().size());
+				switch(game.getTeamB().getDfList().get(tempInt)){
+				case "df1":
+					result = game.getTeamB().getDf1().getName();
+					break;
+				case "df2":
+					result = game.getTeamB().getDf2().getName();
+					break;
+				case "df3":
+					result = game.getTeamB().getDf3().getName();
+					break;
+				case "df4":
+					result = game.getTeamB().getDf4().getName();
+					break;
+				case "df5":
+					result = game.getTeamB().getDf5().getName();
+					break;
+				}
+				break;
+			case 2:
+				tempInt = r.nextInt(game.getTeamB().getMdList().size());
+				switch(game.getTeamB().getMdList().get(tempInt)){
+				case "md1":
+					result = game.getTeamB().getMd1().getName();
+					break;
+				case "md2":
+					result = game.getTeamB().getMd2().getName();
+					break;
+				case "md3":
+					result = game.getTeamB().getMd3().getName();
+					break;
+				case "md4":
+					result = game.getTeamB().getMd4().getName();
+					break;
+				case "md5":
+					result = game.getTeamB().getMd5().getName();
+					break;
+				}
+				break;
+			case 3:
+				tempInt = r.nextInt(game.getTeamB().getFwList().size());
+				switch(game.getTeamB().getFwList().get(tempInt)){
+				case "fw1":
+					result = game.getTeamB().getFw1().getName();
+					break;
+				case "fw2":
+					result = game.getTeamB().getFw2().getName();
+					break;
+				case "fw3":
+					result = game.getTeamB().getFw3().getName();
+					break;
+				case "fw4":
+					result = game.getTeamB().getFw4().getName();
+					break;
+				case "fw5":
+					result = game.getTeamB().getFw5().getName();
+					break;
+				}
+				break;
+			}
+			//krai na line
+			break;
+		}
+		
 		return result;
 	}
 
